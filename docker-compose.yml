@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: DBContainer
+    environment:
+      POSTGRES_DB: MatchaDB
+      POSTGRES_USER: MatchaADM
+      POSTGRES_PASSWORD: ADMPSWD
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    image: mcr.microsoft.com/dotnet/sdk:7.0
+    container_name: BackendApp
+    volumes:
+      - ./BackendApp:/app
+    working_dir: /app
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=DBContainer;Database=MatchaDB;Username=MatchaADM;Password=ADMPSWD
+    depends_on:
+      - postgres
+    command: ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:5000"]
+
+  frontend:
+    image: node:16
+    container_name: my_react_app
+    volumes:
+      - ./my-react-app:/app
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    command: ["npm", "start"]
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+networks:
+  my_network:
+    driver: bridge
+
+volumes:
+  pgdata:
