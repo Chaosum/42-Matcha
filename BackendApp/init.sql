@@ -3,9 +3,9 @@ CREATE TABLE users (
     email VARCHAR(200) NOT NULL,
     password VARCHAR(200) NOT NULL,
     username VARCHAR(50),
-    first_name VARCHAR,
-    last_name VARCHAR,
-    email_verification_link VARCHAR,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email_verification_link VARCHAR(255),
     is_verified BOOLEAN DEFAULT FALSE,
     birth_date TIMESTAMP,
     gender_id INT,
@@ -16,7 +16,7 @@ CREATE TABLE users (
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_banned BOOLEAN DEFAULT FALSE,
     ban_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    localisation VARCHAR,
+    localisation VARCHAR(100),
     FOREIGN KEY (gender_id) REFERENCES gender(id),
     FOREIGN KEY (profile_picture_id) REFERENCES pictures(id)
 );
@@ -115,12 +115,10 @@ CREATE TABLE views (
     userid INT,
     userid_seen INT,
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_notified BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (userid, userid_seen),
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (userid_seen) REFERENCES users(id)
 );
-
 
 DELIMITER //
 
@@ -128,8 +126,8 @@ CREATE TRIGGER check_likes_for_match
 AFTER UPDATE ON liked
 FOR EACH ROW
 BEGIN
-    DECLARE username1 VARCHAR(50);
-    DECLARE username2 VARCHAR(50);
+    DECLARE first_username VARCHAR(50);
+    DECLARE second_username VARCHAR(50);
 
     SELECT username INTO first_username FROM users WHERE id = NEW.first_userid;
     SELECT username INTO second_username FROM users WHERE id = NEW.second_userid;
@@ -143,13 +141,12 @@ BEGIN
             (NEW.first_userid, CONCAT('It''s a match! Start chatting with ', second_username), 1),
             (NEW.second_userid, CONCAT('It''s a match! Start chatting with ', first_username), 1);
     END IF;
-END;
+END//
 
 CREATE TRIGGER enforce_alphabetical_order_on_update
 BEFORE UPDATE ON liked
 FOR EACH ROW
 BEGIN
-    -- Vérifie si l'ordre alphabétique est respecté
     IF NEW.first_userid > NEW.second_userid THEN
         SET @temp := NEW.first_userid;
         SET NEW.first_userid = NEW.second_userid;
@@ -161,41 +158,15 @@ CREATE TRIGGER notify_view
 BEFORE INSERT ON views
 FOR EACH ROW
 BEGIN
-    DECLARE view_exists BOOLEAN;
-    DECLARE already_notified BOOLEAN;
-
-    -- Vérifie si la combinaison (userid, userid_seen) existe déjà
-    SET view_exists = EXISTS (
+    IF EXISTS (
         SELECT 1 FROM views
         WHERE userid = NEW.userid AND userid_seen = NEW.userid_seen
-    );
-
-    -- Si la vue existe, on vérifie si une notification a déjà été envoyée
-    IF view_exists THEN
-        SELECT is_notified INTO already_notified
-        FROM views
-        WHERE userid = NEW.userid AND userid_seen = NEW.userid_seen;
-
-        -- Si la notification n'a pas été envoyée, on l'envoie
-        IF NOT already_notified THEN
-            INSERT INTO notification (userid, content, statusid, created_on)
-            VALUES (NEW.userid_seen, CONCAT('Your profile was viewed by ', NEW.userid), 2, NOW());
-
-            -- Met à jour `is_notified` à TRUE pour cette entrée
-            UPDATE views SET is_notified = TRUE
-            WHERE userid = NEW.userid AND userid_seen = NEW.userid_seen;
-        END IF;
-
-        -- Si une notification a déjà été envoyée, on empêche l'insertion d'une nouvelle vue
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'View already exists and notification sent.';
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'View already exists';
     ELSE
-        -- S'il s'agit d'une nouvelle vue, on l'insère avec is_notified = FALSE et on crée une notification
-        SET NEW.is_notified = FALSE;
         INSERT INTO notification (userid, content, statusid, created_on)
         VALUES (NEW.userid_seen, CONCAT('Your profile was viewed by ', NEW.userid), 2, NOW());
-        SET NEW.is_notified = TRUE;
     END IF;
 END//
-
 
 DELIMITER ;
