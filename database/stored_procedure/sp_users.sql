@@ -272,7 +272,9 @@ CREATE PROCEDURE AddGeneratedUser(
     IN genderID INT,
     IN sexualOrientation INT,
     IN _coordinates VARCHAR(100),
+    IN _address VARCHAR(100),
     IN _biography VARCHAR(280),
+    IN _fame INT,
     IN tag1 INT,
     IN tag2 INT,
     IN tag3 INT,
@@ -292,10 +294,16 @@ BEGIN
     
     START TRANSACTION;
 
-    INSERT INTO users (username, password, email, birth_date, first_name, last_name, 
-                       gender_id, sexual_orientation, coordinates, users.biography, salt, db.users.is_verified)
-        VALUES (_username, _password, _email, birthDate, firstName, lastName, 
-                genderID, sexualOrientation, _coordinates, _biography, _salt, 1);
+    INSERT INTO users (username, password, email, salt, birth_date, 
+                       first_name, last_name, gender_id, sexual_orientation, 
+                       coordinates, address, biography, fame, is_verified)
+        VALUES (_username, _password, _email, _salt, birthDate, 
+                firstName, lastName, genderID, sexualOrientation,
+                POINT(
+                        CAST(SUBSTRING_INDEX(_coordinates, ',', 1) AS DECIMAL(10,6)),
+                        CAST(SUBSTRING_INDEX(_coordinates, ',', -1) AS DECIMAL(10,6))
+                ), 
+                _address, _biography, _fame, 1);
     
     COMMIT ;
     
@@ -332,6 +340,7 @@ BEGIN
     COMMIT;
     
     CALL UpdateProfileCompletionPercentage(@userID);
+    CALL UpdateProfileStatus(@userID, 2);
 END //
 
 CREATE PROCEDURE GetUserMatches(IN userID INT)

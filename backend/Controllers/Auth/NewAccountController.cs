@@ -92,7 +92,7 @@ public class NewAccountController : ControllerBase
     [Route("[action]/{verificationID}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult VerifyAccount(string verificationID)
+    public async Task<IActionResult> VerifyAccount(string verificationID)
     {
         try
         {
@@ -100,12 +100,12 @@ public class NewAccountController : ControllerBase
                 return BadRequest("Verification link incorrect");
             }
 
-            using MySqlConnection dbClient = DbHelper.GetOpenConnection();
-            using MySqlCommand cmd = new MySqlCommand("GetVerificationAccountInfo", dbClient);
+            await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+            await using MySqlCommand cmd = new MySqlCommand("GetVerificationAccountInfo", dbClient);
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("inputVerifyLink", verificationID);
 
-            using MySqlDataReader reader = cmd.ExecuteReader();
+            await using MySqlDataReader reader = cmd.ExecuteReader();
             if (!reader.Read()) 
                 return BadRequest("Verification link not found or invalid.");
             
@@ -114,7 +114,7 @@ public class NewAccountController : ControllerBase
             bool isVerified = reader.GetBoolean("is_verified");
             string emailVerificationLink = reader.GetString("email_verification_link");
             string email = reader.GetString("email");
-            DateTime forgottenPasswordLinkExpiration = reader.GetDateTime("forgotten_password_link_expiration");
+            DateTime forgottenPasswordLinkExpiration = reader.GetDateTime("email_verification_link_expiration");
             // Vérifier l'état de l'utilisateur
             if (isVerified)
             {
@@ -124,8 +124,10 @@ public class NewAccountController : ControllerBase
             {
                 return BadRequest("Email expired.");
             }
+            reader.Close();
+            
             // Mettez à jour l'état de vérification ici si nécessaire
-            using MySqlCommand updateCmd = new MySqlCommand("assertAccountVerification", dbClient);
+            await using MySqlCommand updateCmd = new MySqlCommand("assertAccountVerification", dbClient);
             updateCmd.CommandType = System.Data.CommandType.StoredProcedure;
             updateCmd.Parameters.AddWithValue("user_id", userId);
             updateCmd.ExecuteNonQuery();

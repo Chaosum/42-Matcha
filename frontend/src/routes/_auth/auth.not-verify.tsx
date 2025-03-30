@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Center, VStack } from '@chakra-ui/react'
 
-export const Route = createFileRoute('/_auth/not-verify')({
+export const Route = createFileRoute('/_auth/auth/not-verify')({
   component: RouteComponent,
 })
 

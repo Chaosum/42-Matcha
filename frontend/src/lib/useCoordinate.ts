@@ -1,6 +1,6 @@
 import axios from "axios";
-import {useEffect} from "react";
-import {useState} from "react";
+import { useEffect } from "react";
+import { useState } from "react";
 
 export interface UserCoordinates {
   latitude: number;
@@ -9,7 +9,11 @@ export interface UserCoordinates {
 }
 
 export function useCoordinate(): UserCoordinates {
-  const [locationData, setLocationData] = useState<UserCoordinates>();
+  const [locationData, setLocationData] = useState<UserCoordinates>({
+    latitude: 0,
+    longitude: 0,
+    access: false,
+  });
 
   const options: PositionOptions = {
     enableHighAccuracy: true,
@@ -52,19 +56,19 @@ export function useCoordinate(): UserCoordinates {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.permissions
-      .query({name: "geolocation"})
-      .then(function (result) {
-        console.log(result);
-        if (result.state === "granted") {
-          navigator.geolocation.getCurrentPosition(success, errors, options);
-        } else if (result.state === "prompt") {
-          navigator.geolocation.getCurrentPosition(success, errors, options);
-        } else if (result.state === "denied") {
-          console.log("Location access denied.");
-          // with ip address
-          getLocation().then((r) => console.log(r));
-        }
-      });
+        .query({ name: "geolocation" })
+        .then(function (result) {
+          console.log(result);
+          if (result.state === "granted") {
+            navigator.geolocation.getCurrentPosition(success, errors, options);
+          } else if (result.state === "prompt") {
+            navigator.geolocation.getCurrentPosition(success, errors, options);
+          } else if (result.state === "denied") {
+            console.log("Location access denied.");
+            // with ip address
+            getLocation().then((r) => console.log(r));
+          }
+        });
     } else {
       console.log("Geolocation is not supported by this browser.");
     }
@@ -83,7 +87,7 @@ export async function GetCoordinates(address: string) {
 
   if (reverseGeocoding.data.length === 0) return;
 
-  const {lat, lon} = reverseGeocoding.data[0] as {
+  const { lat, lon } = reverseGeocoding.data[0] as {
     lat: string;
     lon: string;
   };
@@ -94,7 +98,7 @@ export async function GetCoordinates(address: string) {
   if (isNaN(latitude) || isNaN(longitude)) {
     return;
   }
-  return {access: false, latitude, longitude};
+  return { access: false, latitude, longitude };
 }
 
 export async function GetAddressFromCoordinates(lat: number, lon: number) {
@@ -106,7 +110,7 @@ export async function GetAddressFromCoordinates(lat: number, lon: number) {
   const reverseGeocoding = await axios.get(
     `https://nominatim.openstreetmap.org/reverse?lat=${lat.toString()}&lon=${lon.toString()}&format=jsonv2`
   );
-  const {house_number, city, postcode, road, suburb, town, village} =
+  const { house_number, city, postcode, road, suburb, town, village } =
     reverseGeocoding.data.address;
   const displayLocation = `${house_number ? `${house_number},` : ""} ${road}, ${suburb ? `${suburb},` : ""}${postcode}, ${city || town || village}`;
 

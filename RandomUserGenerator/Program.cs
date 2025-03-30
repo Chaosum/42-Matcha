@@ -3,7 +3,7 @@ using MySql.Data.MySqlClient;
 using RandomUserGenerator;
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
-                       "Server=localhost;Port=3307;Database=db;user=user;password=password;";
+                       "Server=localhost;Port=3307;Database=db;user=root;password=rootpassword;";
 
 var imagesPath = "/home/cyril/Dev/42/Occ/Matcha/backend/images/";
 
@@ -32,14 +32,19 @@ if (connection.State != ConnectionState.Open)
 }
 
 Console.WriteLine("Generating User Data...");
-Console.WriteLine("Generating female users...");
-await GenerateUser.Generate(connection, "female", numberOfFemaleUsers, imagesPath);
-Console.WriteLine("Done!");
+if (numberOfFemaleUsers > 0)
+{
+    Console.WriteLine("Generating female users...");
+    await GenerateUser.Generate(connection, "female", numberOfFemaleUsers, imagesPath);
+    Console.WriteLine("Done!");
+}
 
-Console.WriteLine("Generating male users...");
-await GenerateUser.Generate(connection, "male", numberOfMaleUsers, imagesPath);
-Console.WriteLine("Done!");
-
+if (numberOfMaleUsers > 0)
+{
+    Console.WriteLine("Generating male users...");
+    await GenerateUser.Generate(connection, "male", numberOfMaleUsers, imagesPath);
+    Console.WriteLine("Done!");
+}
 connection.Close();
 
 Console.WriteLine("Generation Complete!");

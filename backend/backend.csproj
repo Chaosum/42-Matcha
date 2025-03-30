@@ -21,8 +21,4 @@
         <Link>.dockerignore</Link>
       </Content>
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="images\" />
-    </ItemGroup>
 </Project>

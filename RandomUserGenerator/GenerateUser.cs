@@ -17,7 +17,6 @@ public static class GenerateUser
         var lorem = new Bogus.DataSets.Lorem("en");
         var random = new Bogus.Randomizer();
         
-
         foreach (var user in users.Results)
         {
             user.Login.Password = "1234578Jjklrfe!";
@@ -25,13 +24,14 @@ public static class GenerateUser
             try
             {
                 (string salt, byte[] hashedPassword) = Crypt.CryptPassWord(user.Login.Password ?? throw new InvalidOperationException());
-                Console.WriteLine($"Adding user {salt} {user.Login.Password} to the database...");
+                Console.WriteLine($"Adding user {user.Login.Username} {user.Login.Password} to the database...");
+                
                 await using MySqlCommand cmd = new("AddGeneratedUser", connection);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@_username", user.Login.Username);
                 cmd.Parameters.AddWithValue("@_password", hashedPassword);
-                cmd.Parameters.AddWithValue("@_salt", salt);
                 cmd.Parameters.AddWithValue("@_email", user.Email);
+                cmd.Parameters.AddWithValue("@_salt", salt);
                 cmd.Parameters.AddWithValue("@birthDate", user.Dob.Date.Split("T")[0]);
                 
                 cmd.Parameters.AddWithValue("@firstName", user.Name.First);
@@ -39,14 +39,24 @@ public static class GenerateUser
                 cmd.Parameters.AddWithValue("@genderID", user.Gender == "male" ? 1 : 2);
                 cmd.Parameters.AddWithValue("@sexualOrientation", random.WeightedRandom([1, 2, 3], [0.5f, 0.25f, 0.25f]));
                 cmd.Parameters.AddWithValue("@_coordinates", user.Location.Coordinates.Latitude + "," + user.Location.Coordinates.Longitude);
+                cmd.Parameters.AddWithValue("@_address", user.Location.Street.Number + ", " + user.Location.Street.Name + ", " 
+                                                        + user.Location.City + ", " 
+                                                        + user.Location.Country);
                 
                 // Random Bio
-                var bio = lorem.Sentences(RandomNumberGenerator.GetInt32(1, 5));
+                var bio = lorem.Sentences(RandomNumberGenerator.GetInt32(1, 2));
                 cmd.Parameters.AddWithValue("@_biography", bio);
+
+                var fame = 1000;
+                var isBad = random.Bool();
+                var fameVariation = random.Int(0, 200);
+                if (isBad) fame -= fameVariation;
+                else fame += fameVariation;
+                cmd.Parameters.AddWithValue("@_fame", fame);
                 
                 // Random tags
                 var tags = new List<int>();
-                var numberOfTags = random.Int(0, 5);
+                var numberOfTags = random.Int(1, 5);
                 for (int i = 0; i < numberOfTags; i++) {
                     var tag = random.Int(1, 38);
                     while (tags.Contains(tag)) {
@@ -54,7 +64,7 @@ public static class GenerateUser
                     }
                     tags.Add(tag);
                 }
-
+                
                 for (int i = 0; i < numberOfTags; i++) {
                     // Console.WriteLine($"Adding tag{i+1} {tags[i]}");
                     cmd.Parameters.AddWithValue("@tag"+ (i + 1), tags[i]);
@@ -91,10 +101,11 @@ public static class GenerateUser
                 for (int i = numberOfImages; i < 5; i++) {
                     cmd.Parameters.AddWithValue("@image"+ (i + 1), null);
                 }
-        
-                await cmd.ExecuteNonQueryAsync();
-        
-                Console.WriteLine($"User {user.Name.First} {user.Name.Last} added to the database! Password: {user.Login.Password}");
+
+                var result = await cmd.ExecuteNonQueryAsync();
+                Console.WriteLine(result == 0
+                    ? $"User {user.Name.First} {user.Name.Last} failed to be added to the database!"
+                    : $"User {user.Name.First} {user.Name.Last} added to the database! Password: {user.Login.Password}");
             }
             catch (Exception e)
             {

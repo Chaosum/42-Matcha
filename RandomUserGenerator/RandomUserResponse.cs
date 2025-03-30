@@ -7,7 +7,7 @@ namespace RandomUserGenerator;
 public class RandomUserResponse
 {
     [JsonPropertyName("results")]
-    public RandomUser[] Results { get; set; } = Array.Empty<RandomUser>();
+    public RandomUser[] Results { get; set; } = [];
 
     public override string ToString()
     {
@@ -18,6 +18,14 @@ public class RandomUserResponse
             user.Name.Last = user.Name.Last.First().ToString().ToUpper() + user.Name.Last.Substring(1);
             sb.Append($"Name: {user.Name.First} {user.Name.Last}\n");
             sb.Append(user.Gender);
+            sb.Append($"\nUsername: {user.Login.Username}\n");
+            sb.Append($"Email: {user.Email}\n");
+            sb.Append($"Birthdate: {user.Dob.Date.Split("T")[0]}\n");
+            sb.Append($"Address: {user.Location.Street.Number} {user.Location.Street.Name}, {user.Location.City}, {user.Location.Country}\n");
+            sb.Append($"Coordinates: {user.Location.Coordinates.Latitude}, {user.Location.Coordinates.Longitude}\n");
+            sb.Append($"Timezone: {user.Location.Timezone.Description}\n");
+            // sb.Append($"Password: {user.Login.Password}\n");
+            sb.Append("\n");
         }
         return sb.ToString();
     }
@@ -64,6 +72,9 @@ public class Name
 [Serializable]
 public class Location
 {
+    [JsonPropertyName("street")]
+    public Street Street { get; set; } = new Street();
+    
     [JsonPropertyName("city")]
     public string City { get; set; } = string.Empty;
     
@@ -73,8 +84,34 @@ public class Location
     [JsonPropertyName("country")]
     public string Country { get; set; } = string.Empty;
     
+    // [JsonPropertyName("postcode")]
+    // public int? Postcode { get; set; } = null;
+    
     [JsonPropertyName("coordinates")]
     public Coordinates Coordinates { get; set; } = new Coordinates();
+    
+    [JsonPropertyName("timezone")]
+    public Timezone Timezone { get; set; } = new Timezone();
+}
+
+[Serializable]
+public class Street
+{
+    [JsonPropertyName("number")]
+    public int Number { get; set; }
+    
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+}
+
+[Serializable]
+public class Timezone
+{
+    [JsonPropertyName("offset")]
+    public string Offset { get; set; } = string.Empty;
+    
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
 }
 
 [Serializable]
