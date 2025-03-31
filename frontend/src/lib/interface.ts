@@ -2,6 +2,7 @@ export interface UserProfile {
   username: string;
   firstName: string;
   lastName: string;
+  birthDate: Date;
   biography: string;
   coordinates: string;
   address: string;

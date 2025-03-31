@@ -1,12 +1,13 @@
-import {Badge, Button, Flex, Text} from "@chakra-ui/react";
-import {DefaultAvatar, EditIcon, EditImages} from "@/components/Icons.tsx";
-import {UserImage} from "@/components/UserImage.tsx";
-import {UserProfile} from "@/lib/interface.ts";
-import {useNavigate} from "@tanstack/react-router";
-import {Route} from "@/routes/_app/profile.me.tsx";
+import { Badge, Button, Flex, Text } from "@chakra-ui/react";
+import { DefaultAvatar, EditIcon, EditImages } from "@/components/Icons.tsx";
+import { UserImage } from "@/components/UserImage.tsx";
+import { UserProfile } from "@/lib/interface.ts";
+import { useNavigate } from "@tanstack/react-router";
+import { Route } from "@/routes/_app/profile.me.tsx";
 
-export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
-  const navigate = useNavigate({from: Route.fullPath});
+export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
+  const navigate = useNavigate({ from: Route.fullPath });
+  const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
 
   return (
     <Flex
@@ -30,18 +31,19 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
           top={5}
           right={5}
         >
-          <EditIcon/>
+          <EditIcon />
         </Button>
       )}
       <Flex
         w="100%"
+        maxW={1000}
         px={4}
         gap={4}
         alignItems="center"
-        justifyContent="center"
+        justifyContent="left"
         wrap="wrap"
       >
-        {data.images[0] ? (
+        {data.images && data.images[0] ? (
           <UserImage
             imageName={data.images[0]}
             width="300px"
@@ -49,21 +51,25 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
             borderRadius={"full"}
           />
         ) : (
-          <DefaultAvatar/>
+          <DefaultAvatar />
         )}
-        <Flex direction={"column"} alignItems="center" gap={4} maxW={"100%"}>
-          <Flex direction="column" gap={2} maxW={"100%"}>
-            <p>{data.firstName + " " + data.lastName}</p>
-            <p>{data.address}</p>
-            <p>Fame: {data.fameRating}</p>
+        <Flex direction={"column"} alignItems="left" gap={4} grow={1}>
+          <Flex direction="column" gap={2} p={2}>
+            <Text>{data.firstName + " " + data.lastName}</Text>
+            <Text>{data.address}</Text>
+            {/*<HStack justifyContent="space-between" w="100%">*/}
+            <Text>{age} ans</Text>
+            <Text>Fame: {data.fameRating}</Text>
+            {/*</HStack>*/}
             <Flex gap={2} wrap="wrap">
-              {Object.entries(data.tags).map(([key, value]) => {
-                return (
-                  <Badge key={value} size="lg" variant="solid">
-                    {key}
-                  </Badge>
-                );
-              })}
+              {data.tags &&
+                Object.entries(data.tags).map(([key, value]) => {
+                  return (
+                    <Badge key={value} size="lg" variant="solid">
+                      {key}
+                    </Badge>
+                  );
+                })}
             </Flex>
           </Flex>
           <Flex
@@ -106,13 +112,14 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
             top={5}
             right={5}
           >
-            <EditImages/>
+            <EditImages />
           </Button>
         )}
-        {data.images.map((_image, index) => {
-          if (index + 1 > 1)
-            return <UserImage key={index} imageName={_image}/>;
-        })}
+        {data.images &&
+          data.images.map((_image, index) => {
+            if (index + 1 > 1)
+              return <UserImage key={index} imageName={_image} />;
+          })}
       </Flex>
     </Flex>
   );
