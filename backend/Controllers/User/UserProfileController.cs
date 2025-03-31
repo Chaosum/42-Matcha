@@ -42,6 +42,7 @@ public class UserProfileController(ILogger<UserProfileController> logger) : Cont
                 Username = reader.GetString("username") ?? "",
                 FirstName = reader["first_name"].ToString() ?? "",
                 LastName = reader["last_name"].ToString() ?? "",
+                birthDate = reader.GetDateTime("birth_date"),
                 Gender = reader["gender_id"] as int?,
                 SexualOrientation = reader["sexual_orientation"] as int?,
                 Biography = reader["biography"].ToString() ?? "",
@@ -103,6 +104,7 @@ public class UserProfileController(ILogger<UserProfileController> logger) : Cont
             {
                 FirstName = reader["first_name"].ToString() ?? "",
                 LastName = reader["last_name"].ToString() ?? "",
+                birthDate = reader.GetDateTime("birth_date"),
                 Gender = reader["gender_id"] as int?,
                 SexualOrientation = reader["sexual_orientation"] as int?,
                 Biography = reader["biography"].ToString() ?? "",

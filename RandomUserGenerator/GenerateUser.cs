@@ -87,10 +87,10 @@ public static class GenerateUser
                     
                     // Save image to disk
                     var image = await client.GetByteArrayAsync(imageUrl);
-                    var url = imagesPath + Guid.NewGuid() + ".jpg";
+                    var url = Guid.NewGuid() + ".jpg";
                     try {
                         // Console.WriteLine($"Saving image {i+1} to disk at {url}");
-                        await File.WriteAllBytesAsync(url, image);
+                        await File.WriteAllBytesAsync(imagesPath + url, image);
                         cmd.Parameters.AddWithValue("@image"+ (i + 1), url);
                     } catch (Exception e) {
                         Console.WriteLine(e.Message);
