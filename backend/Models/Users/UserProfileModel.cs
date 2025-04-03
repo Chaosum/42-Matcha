@@ -50,4 +50,10 @@ public class UserProfileModel
     
     [SwaggerIgnore]
     public int? Status {get;set;}
+
+    [SwaggerIgnore] 
+    public bool Liked { get; set; }
+    
+    [SwaggerIgnore]
+    public bool Match {get;set;}
 }

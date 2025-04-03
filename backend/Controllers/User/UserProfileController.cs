@@ -26,9 +26,11 @@ public class UserProfileController(ILogger<UserProfileController> logger) : Cont
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Get(string username)
+    public async Task<ActionResult> Get(string username, [FromHeader] string authorization)
     {
         try {
+            var token= JwtHelper.DecodeJwtToken(authorization);
+            
             await using MySqlConnection conn = DbHelper.GetOpenConnection();
             await using MySqlCommand cmd = new MySqlCommand("GetUserProfile", conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -68,6 +70,31 @@ public class UserProfileController(ILogger<UserProfileController> logger) : Cont
                     profile.Images.Add(reader["image_url"] as string ?? "");
             }
             await reader.CloseAsync();
+            
+            await using MySqlCommand likedAndMatch = new MySqlCommand("GetLikeAndMatch", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@userID", token.id);
+            cmd.Parameters.AddWithValue("@likedUser", username);
+            
+            await using MySqlDataReader likeAndMatchReader = cmd.ExecuteReader();
+
+            if (!likeAndMatchReader.Read()) {
+                await likeAndMatchReader.CloseAsync();
+                return Ok(profile);
+            };
+            
+            profile.Liked = likeAndMatchReader.HasRows;
+                
+            if (!profile.Liked && await likeAndMatchReader.NextResultAsync())
+            {
+                profile.Liked = likeAndMatchReader.HasRows;
+            }
+            
+            if (await likeAndMatchReader.NextResultAsync())
+            {
+                profile.Match = likeAndMatchReader.HasRows;
+            }
+
             return Ok(profile);
         }
         catch (MySqlException e)

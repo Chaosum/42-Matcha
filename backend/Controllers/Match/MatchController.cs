@@ -52,4 +52,34 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
             return Problem(title: "Server error", detail: "");
         }
     }
+    
+    /// <summary>
+    /// Like user
+    /// </summary>
+    [HttpPost]
+    [Route("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> Like([FromHeader] string authorization, [FromBody] string username)
+    {
+        try {
+            var token = JwtHelper.DecodeJwtToken(authorization);
+            
+            await using MySqlConnection conn = DbHelper.GetOpenConnection();
+            await using MySqlCommand cmd = new MySqlCommand("LikeUser", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@userID", token.id);
+            cmd.Parameters.AddWithValue("@username", username);
+            cmd.Parameters.AddWithValue("@isLike", true);
+            
+            await cmd.ExecuteNonQueryAsync();
+            
+            return Ok();
+        }
+        catch (MySqlException e) {
+            logger.LogError(message: e.Message);
+            return Problem(title: "Server error", detail: "");
+        }
+    }
 }

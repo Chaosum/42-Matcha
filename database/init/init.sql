@@ -141,7 +141,7 @@ BEGIN
             (NEW.first_userid, CONCAT('It''s a match! Start chatting with ', second_username), 1),
             (NEW.second_userid, CONCAT('It''s a match! Start chatting with ', first_username), 1);
     END IF;
-END//
+END //
 
 CREATE TRIGGER enforce_alphabetical_order_on_update
 BEFORE UPDATE ON liked
