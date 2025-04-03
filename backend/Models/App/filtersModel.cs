@@ -13,5 +13,8 @@ namespace backend.Models.App
         public required int distanceGap { get; set; }
         public required int fameGap { get; set; }
         public required string sortBy { get; set; }
+        public required string resultOffset { get; set; }
+        public required string resultLimit { get; set; }
+
     }
 }
