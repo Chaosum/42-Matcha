@@ -1,5 +1,19 @@
-import { Badge, Button, Flex, Text } from "@chakra-ui/react";
-import { DefaultAvatar, EditIcon, EditImages } from "@/components/Icons.tsx";
+import {
+  Badge,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import {
+  BlockIcon,
+  ConversationIcon,
+  EditIcon,
+  EditImages,
+  LikeIcon,
+} from "@/components/Icons.tsx";
 import { UserImage } from "@/components/UserImage.tsx";
 import { UserProfile } from "@/lib/interface.ts";
 import { useNavigate } from "@tanstack/react-router";
@@ -43,16 +57,19 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
         justifyContent="left"
         wrap="wrap"
       >
-        {data.images && data.images[0] ? (
-          <UserImage
-            imageName={data.images[0]}
-            width="300px"
-            height="300px"
-            borderRadius={"full"}
-          />
-        ) : (
-          <DefaultAvatar />
-        )}
+        <UserAction
+          strings={data.images}
+          me={isMe}
+          onClick={async () => {
+            console.log("Like");
+          }}
+          onClick1={async () => {
+            console.log("Message");
+          }}
+          onClick2={async () => {
+            console.log("Block");
+          }}
+        />
         <Flex direction={"column"} alignItems="left" gap={4} grow={1}>
           <Flex direction="column" gap={2} p={2}>
             <Text>{data.firstName + " " + data.lastName}</Text>
@@ -122,5 +139,39 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
           })}
       </Flex>
     </Flex>
+  );
+}
+
+function UserAction(props: {
+  strings: string[];
+  me: boolean;
+  onClick: () => Promise<void>;
+  onClick1: () => Promise<void>;
+  onClick2: () => Promise<void>;
+}) {
+  return (
+    <VStack gap={2} alignItems="center">
+      {props.strings && props.strings[0] && (
+        <UserImage
+          imageName={props.strings[0]}
+          width="300px"
+          height="300px"
+          borderRadius={"full"}
+        />
+      )}
+      {!props.me && (
+        <HStack gap={6} alignItems="center">
+          <IconButton variant="ghost" onClick={props.onClick}>
+            <LikeIcon />
+          </IconButton>
+          <IconButton variant="ghost" onClick={props.onClick1}>
+            <ConversationIcon />
+          </IconButton>
+          <IconButton variant="ghost" onClick={props.onClick2}>
+            <BlockIcon />
+          </IconButton>
+        </HStack>
+      )}
+    </VStack>
   );
 }

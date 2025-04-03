@@ -14,6 +14,20 @@ BEGIN
     SELECT image_url FROM pictures WHERE user_id = @userID ORDER BY position;
 END //
 
+CREATE PROCEDURE GetLikeAndMatch(
+    IN userID INT,
+    IN likedUser VARCHAR(50)
+)
+BEGIN 
+    SELECT id INTO @likedUserID FROM users WHERE username = likedUser;
+    
+    SELECT COUNT(*) FROM liked WHERE first_userid = userID AND second_userid = @likedUserID;
+    SELECT COUNT(*) FROM liked WHERE first_userid = @likedUserID AND second_userid = userID;
+    
+    SELECT COUNT(*) FROM `match` WHERE first_userid = userID AND second_userid = @likedUserID OR
+                                        first_userid = @likedUserID AND second_userid = userID;
+END //
+
 CREATE PROCEDURE GetUserProfileStatus(IN userID INT)
 BEGIN
     SELECT profile_status
@@ -356,6 +370,29 @@ BEGIN
         SELECT first_userid FROM `match` WHERE second_userid = userID
         UNION
         SELECT second_userid FROM `match` WHERE first_userid = userID);
+END //
+
+CREATE PROCEDURE LikeUser(
+    IN userID INT,
+    IN likedUser VARCHAR(50),
+    IN isLike BOOLEAN
+)
+BEGIN
+    SELECT id INTO @user2id FROM users WHERE username = likedUser;
+    
+    SELECT COUNT(*) INTO @count FROM liked 
+            WHERE first_userid = userID AND second_userid = likedUser OR 
+                    first_userid = likedUser AND second_userid = userID;
+    
+    IF @count = 0 THEN
+        INSERT INTO liked (first_userid, second_userid, first_user_like_status)
+            VALUES (userID, likedUser, isLike);
+    ELSE
+        UPDATE liked SET first_user_like_status = isLike
+            WHERE (first_userid = userID AND second_userid = likedUser);
+        UPDATE liked SET second_user_like_status = isLike
+            WHERE (first_userid = likedUser AND second_userid = userID);
+    END IF;  
 END //
 
 DELIMITER ;
