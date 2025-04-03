@@ -56,7 +56,9 @@ public class DatingController : ControllerBase
         command.Parameters.AddWithValue("ref_gender_id", profile.Gender);
         command.Parameters.AddWithValue("ref_sexual_orientation_id", profile.SexualOrientation);
         command.Parameters.AddWithValue("ref_coordinates", profile.Coordinates);
-
+        command.Parameters.AddWithValue("result_offset",matchingSettings.resultOffset);
+        command.Parameters.AddWithValue("result_resultLimit",matchingSettings.resultLimit);
+        
         try
         {
             var readerProfiles = command.ExecuteReader();
