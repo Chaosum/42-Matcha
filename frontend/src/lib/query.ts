@@ -200,3 +200,42 @@ export async function ValidateProfile() {
     return false;
   });
 }
+
+export type FiltersModel = {
+  id: string;
+  range: number;
+  ageGap: number;
+  distanceGap: number;
+  fameGap: number;
+  sortBy: string;
+  resultOffset: number;
+  resultLimit: number;
+};
+
+export async function Dating(params: FiltersModel, authToken: string) {
+  try {
+    // Effectuer l'appel à l'API avec POST et les bons headers
+    const response = await axios.post(
+      "/App/Dating", // L'URL de ton endpoint
+      params, // Le corps de la requête avec les données de FiltersModel
+      {
+        headers: {
+          "Content-Type": "application/json", // Spécifier le type de contenu JSON
+          Authorization: `Bearer ${authToken}`, // Passer le token d'authentification dans l'en-tête
+        },
+      }
+    );
+
+    // Vérifier la réponse
+    if (response.status === 200) {
+      console.log("Profiles matching filters: ", response.data);
+      return response.data; // Retourner les profils récupérés
+    } else {
+      console.error("Failed to retrieve profiles.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error during API call", error);
+    return null; // Retourner null en cas d'erreur
+  }
+}
