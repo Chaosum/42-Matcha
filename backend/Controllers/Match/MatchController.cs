@@ -61,7 +61,7 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Like([FromHeader] string authorization, [FromBody] string username)
+    public async Task<ActionResult> Like([FromHeader] string authorization, [FromBody] LikeModel data)
     {
         try {
             var token = JwtHelper.DecodeJwtToken(authorization);
@@ -70,8 +70,8 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
             await using MySqlCommand cmd = new MySqlCommand("LikeUser", conn);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@userID", token.id);
-            cmd.Parameters.AddWithValue("@username", username);
-            cmd.Parameters.AddWithValue("@isLike", true);
+            cmd.Parameters.AddWithValue("@likedUser", data.Username);
+            cmd.Parameters.AddWithValue("@isLike", data.Liked);
             
             await cmd.ExecuteNonQueryAsync();
             

@@ -72,29 +72,24 @@ public class UserProfileController(ILogger<UserProfileController> logger) : Cont
             await reader.CloseAsync();
             
             await using MySqlCommand likedAndMatch = new MySqlCommand("GetLikeAndMatch", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@userID", token.id);
-            cmd.Parameters.AddWithValue("@likedUser", username);
+            likedAndMatch.CommandType = CommandType.StoredProcedure;
+            likedAndMatch.Parameters.AddWithValue("@userID", token.id);
+            likedAndMatch.Parameters.AddWithValue("@otherUser", username);
             
-            await using MySqlDataReader likeAndMatchReader = cmd.ExecuteReader();
+            // output parameters
+            likedAndMatch.Parameters.Add("isLiked", MySqlDbType.Int32);
+            likedAndMatch.Parameters["isLiked"].Direction = ParameterDirection.Output;
+            likedAndMatch.Parameters.Add("isBlocked", MySqlDbType.Int32);
+            likedAndMatch.Parameters["isBlocked"].Direction = ParameterDirection.Output;
+            likedAndMatch.Parameters.Add("isMatched", MySqlDbType.Int32);
+            likedAndMatch.Parameters["isMatched"].Direction = ParameterDirection.Output;
+            
+            await likedAndMatch.ExecuteNonQueryAsync();
 
-            if (!likeAndMatchReader.Read()) {
-                await likeAndMatchReader.CloseAsync();
-                return Ok(profile);
-            };
+            profile.isLiked = likedAndMatch.Parameters["isLiked"].Value as int? > 0;
+            profile.isBlocked = likedAndMatch.Parameters["isBlocked"].Value as int? > 0;
+            profile.isMatched = likedAndMatch.Parameters["isMatched"].Value as int? > 0;
             
-            profile.Liked = likeAndMatchReader.HasRows;
-                
-            if (!profile.Liked && await likeAndMatchReader.NextResultAsync())
-            {
-                profile.Liked = likeAndMatchReader.HasRows;
-            }
-            
-            if (await likeAndMatchReader.NextResultAsync())
-            {
-                profile.Match = likeAndMatchReader.HasRows;
-            }
-
             return Ok(profile);
         }
         catch (MySqlException e)
@@ -189,7 +184,7 @@ public class UserProfileController(ILogger<UserProfileController> logger) : Cont
         var result = Checks.ValidateProfileData(data);
         var token = JwtHelper.DecodeJwtToken(authorization);
         
-        Console.WriteLine("COORDIANTES: " + data.Coordinates);
+        Console.WriteLine("COORDINATES: " + data.Coordinates);
         Console.WriteLine("ADDRESS: " + data.Address);
         
         if (!result.IsValid)

@@ -14,14 +14,18 @@ import {
   EditImages,
   LikeIcon,
 } from "@/components/Icons.tsx";
-import { UserImage } from "@/components/UserImage.tsx";
-import { UserProfile } from "@/lib/interface.ts";
-import { useNavigate } from "@tanstack/react-router";
-import { Route } from "@/routes/_app/profile.me.tsx";
+import {UserImage} from "@/components/UserImage.tsx";
+import {UserProfile} from "@/lib/interface.ts";
+import {useNavigate} from "@tanstack/react-router";
+import {Route} from "@/routes/_app/profile.me.tsx";
+import {useEffect, useState} from "react";
+import {LikeUser} from "@/lib/query.ts";
 
-export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
-  const navigate = useNavigate({ from: Route.fullPath });
+export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
+  const navigate = useNavigate({from: Route.fullPath});
   const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
+
+  console.log("Profile data", data);
 
   return (
     <Flex
@@ -45,7 +49,7 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
           top={5}
           right={5}
         >
-          <EditIcon />
+          <EditIcon/>
         </Button>
       )}
       <Flex
@@ -57,27 +61,21 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
         justifyContent="left"
         wrap="wrap"
       >
-        <UserAction
-          strings={data.images}
-          me={isMe}
-          onClick={async () => {
-            console.log("Like");
-          }}
-          onClick1={async () => {
-            console.log("Message");
-          }}
-          onClick2={async () => {
-            console.log("Block");
-          }}
-        />
+        <VStack gap={2} alignItems="center">
+          <UserImage
+            imageName={data.images[0]}
+            width="300px"
+            height="300px"
+            borderRadius={"full"}
+          />
+          {!isMe && <UserAction data={data}/>}
+        </VStack>
         <Flex direction={"column"} alignItems="left" gap={4} grow={1}>
           <Flex direction="column" gap={2} p={2}>
             <Text>{data.firstName + " " + data.lastName}</Text>
             <Text>{data.address}</Text>
-            {/*<HStack justifyContent="space-between" w="100%">*/}
             <Text>{age} ans</Text>
             <Text>Fame: {data.fameRating}</Text>
-            {/*</HStack>*/}
             <Flex gap={2} wrap="wrap">
               {data.tags &&
                 Object.entries(data.tags).map(([key, value]) => {
@@ -129,49 +127,58 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
             top={5}
             right={5}
           >
-            <EditImages />
+            <EditImages/>
           </Button>
         )}
         {data.images &&
           data.images.map((_image, index) => {
             if (index + 1 > 1)
-              return <UserImage key={index} imageName={_image} />;
+              return <UserImage key={index} imageName={_image}/>;
           })}
       </Flex>
     </Flex>
   );
 }
 
-function UserAction(props: {
-  strings: string[];
-  me: boolean;
-  onClick: () => Promise<void>;
-  onClick1: () => Promise<void>;
-  onClick2: () => Promise<void>;
-}) {
+function UserAction({data}: { data: UserProfile }) {
+  const navigate = useNavigate({from: Route.fullPath});
+  const [isLike, setIsLike] = useState(data.isLiked);
+  const [isBlock, setIsBlock] = useState(data.isBlocked);
+  const [isMatch, setIsMatch] = useState(data.isMatched);
+
+  useEffect(() => {
+    // Checked match
+    
+  }, [isLike]);
+
   return (
-    <VStack gap={2} alignItems="center">
-      {props.strings && props.strings[0] && (
-        <UserImage
-          imageName={props.strings[0]}
-          width="300px"
-          height="300px"
-          borderRadius={"full"}
-        />
-      )}
-      {!props.me && (
-        <HStack gap={6} alignItems="center">
-          <IconButton variant="ghost" onClick={props.onClick}>
-            <LikeIcon />
+    <HStack gap={6} alignItems="center">
+      <IconButton variant="ghost" onClick={async () => {
+        // TODO: add query like
+        if (await LikeUser(data.username, !isLike)) {
+          setIsLike(!isLike);
+        }
+      }}>
+        <LikeIcon checked={isLike}/>
+      </IconButton>
+      {isMatch &&
+          <IconButton variant="ghost" onClick={async () => {
+            await navigate({
+              to: "/match",
+              search: {
+                id: data.username,
+              },
+            });
+          }}>
+              <ConversationIcon/>
           </IconButton>
-          <IconButton variant="ghost" onClick={props.onClick1}>
-            <ConversationIcon />
-          </IconButton>
-          <IconButton variant="ghost" onClick={props.onClick2}>
-            <BlockIcon />
-          </IconButton>
-        </HStack>
-      )}
-    </VStack>
+      }
+      <IconButton variant="ghost" onClick={() => {
+        // TODO: add query bock
+        setIsBlock(!isBlock);
+      }}>
+        <BlockIcon checked={isBlock}/>
+      </IconButton>
+    </HStack>
   );
 }

@@ -200,3 +200,27 @@ export async function ValidateProfile() {
     return false;
   });
 }
+
+export async function LikeUser(username: string, liked: boolean) {
+  const token = localStorage.getItem("token");
+
+  return axios
+  .post("/Match/Like/",
+    {
+      username: username,
+      liked: liked,
+    },
+    {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    }
+  )
+  .then(() => {
+    return true;
+  })
+  .catch((err) => {
+    ToasterError(err.detail);
+    return false;
+  });
+}

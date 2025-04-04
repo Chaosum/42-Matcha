@@ -22,7 +22,7 @@ export function UserImage({
     DownloadImage(imageName).then((data) => {
       setImage(data.data);
     }).catch(async (error) => {
-      if (error.status) await auth.logout();
+      if (error.status === 401) await auth.logout();
       console.error(error);
     });
   }, []);

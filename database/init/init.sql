@@ -81,6 +81,7 @@ CREATE TABLE `match` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_userid INT NOT NULL,
     second_userid INT NOT NULL,
+    status BOOLEAN DEFAULT TRUE,
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (first_userid) REFERENCES users(id),
     FOREIGN KEY (second_userid) REFERENCES users(id),
@@ -131,15 +132,29 @@ BEGIN
 
     SELECT username INTO first_username FROM users WHERE id = NEW.first_userid;
     SELECT username INTO second_username FROM users WHERE id = NEW.second_userid;
+    
+    SELECT status INTO @match_status FROM `match` 
+        WHERE (first_userid = NEW.first_userid AND second_userid = NEW.second_userid) OR 
+              (first_userid = NEW.second_userid AND second_userid = NEW.first_userid);
 
     IF NEW.first_user_like_status = TRUE AND NEW.second_user_like_status = TRUE THEN
-        INSERT INTO `match` (first_userid, second_userid, created_on)
-        VALUES (NEW.first_userid, NEW.second_userid, NOW());
-
+        IF @match_status IS NULL THEN
+            INSERT INTO `match` (first_userid, second_userid, created_on)
+            VALUES (NEW.first_userid, NEW.second_userid, NOW());
+        ELSE
+            UPDATE `match` SET status = TRUE WHERE 
+                (first_userid = NEW.first_userid AND second_userid = NEW.second_userid) OR 
+                (first_userid = NEW.second_userid AND second_userid = NEW.first_userid);
+        END IF;
+        
         INSERT INTO notification (userid, content, statusid)
         VALUES 
             (NEW.first_userid, CONCAT('It''s a match! Start chatting with ', second_username), 1),
             (NEW.second_userid, CONCAT('It''s a match! Start chatting with ', first_username), 1);
+    ELSEIF (NEW.first_user_like_status = FALSE OR NEW.second_user_like_status = FALSE) AND @match_status = true THEN
+        UPDATE `match` SET status = FALSE 
+            WHERE (first_userid = NEW.first_userid AND second_userid = NEW.second_userid) OR 
+                  (first_userid = NEW.second_userid AND second_userid = NEW.first_userid);
     END IF;
 END //
 

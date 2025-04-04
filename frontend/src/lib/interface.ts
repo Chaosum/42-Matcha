@@ -14,6 +14,10 @@ export interface UserProfile {
   gender: number;
   sexualOrientation: number;
   status: number;
+  isLiked: boolean;
+  isMatched: boolean;
+  isBlocked: boolean;
+  isBan: boolean;
 }
 
 export interface Tags {
