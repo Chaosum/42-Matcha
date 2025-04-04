@@ -22,7 +22,7 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
     [Route("[action]")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Get([FromHeader] string authorization)
+    public async Task<ActionResult> GetList([FromHeader] string authorization)
     {
         try {
             var id = JwtHelper.DecodeJwtToken(authorization);
@@ -73,9 +73,22 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
             cmd.Parameters.AddWithValue("@likedUser", data.Username);
             cmd.Parameters.AddWithValue("@isLike", data.Liked);
             
-            await cmd.ExecuteNonQueryAsync();
+            // Add out paranmeter for match status
+            var matchStatus = new MySqlParameter("@matchStatus", MySqlDbType.Int32) {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(matchStatus);
             
-            return Ok();
+            await cmd.ExecuteNonQueryAsync();
+
+            var status = matchStatus.Value as int? > 0;
+            
+            return Ok(new AcceptedResult {
+                Value = new {
+                    matchStatus = status,
+                    message = status ? "It's a match!" : "Like sent"
+                },
+            });
         }
         catch (MySqlException e) {
             logger.LogError(message: e.Message);

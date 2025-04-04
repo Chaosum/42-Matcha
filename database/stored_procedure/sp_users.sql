@@ -410,7 +410,7 @@ BEGIN
             WHERE (first_userid = userID AND second_userid = @user2id);
         UPDATE liked SET second_user_like_status = isLike
             WHERE (first_userid = @user2id AND second_userid = userID);
-    END IF;  
+    END IF;
 END //
 
 DELIMITER ;
