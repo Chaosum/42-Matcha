@@ -14,15 +14,15 @@ import {
   EditImages,
   LikeIcon,
 } from "@/components/Icons.tsx";
-import {UserImage} from "@/components/UserImage.tsx";
-import {UserProfile} from "@/lib/interface.ts";
-import {useNavigate} from "@tanstack/react-router";
-import {Route} from "@/routes/_app/profile.me.tsx";
-import {useEffect, useState} from "react";
-import {LikeUser} from "@/lib/query.ts";
+import { UserImage } from "@/components/UserImage.tsx";
+import { UserProfile } from "@/lib/interface.ts";
+import { useNavigate } from "@tanstack/react-router";
+import { Route } from "@/routes/_app/profile.me.tsx";
+import { useEffect, useState } from "react";
+import { LikeUser } from "@/lib/query.ts";
 
-export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
-  const navigate = useNavigate({from: Route.fullPath});
+export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
+  const navigate = useNavigate({ from: Route.fullPath });
   const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
 
   console.log("Profile data", data);
@@ -49,7 +49,7 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
           top={5}
           right={5}
         >
-          <EditIcon/>
+          <EditIcon />
         </Button>
       )}
       <Flex
@@ -68,7 +68,7 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
             height="300px"
             borderRadius={"full"}
           />
-          {!isMe && <UserAction data={data}/>}
+          {!isMe && <UserAction data={data} />}
         </VStack>
         <Flex direction={"column"} alignItems="left" gap={4} grow={1}>
           <Flex direction="column" gap={2} p={2}>
@@ -127,57 +127,71 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
             top={5}
             right={5}
           >
-            <EditImages/>
+            <EditImages />
           </Button>
         )}
         {data.images &&
           data.images.map((_image, index) => {
             if (index + 1 > 1)
-              return <UserImage key={index} imageName={_image}/>;
+              return <UserImage key={index} imageName={_image} />;
           })}
       </Flex>
     </Flex>
   );
 }
 
-function UserAction({data}: { data: UserProfile }) {
-  const navigate = useNavigate({from: Route.fullPath});
+function UserAction({ data }: { data: UserProfile }) {
+  const navigate = useNavigate({ from: Route.fullPath });
   const [isLike, setIsLike] = useState(data.isLiked);
   const [isBlock, setIsBlock] = useState(data.isBlocked);
   const [isMatch, setIsMatch] = useState(data.isMatched);
 
   useEffect(() => {
     // Checked match
-    
+    if (!isLike && isMatch) {
+      setIsMatch(false);
+    }
   }, [isLike]);
+
+  useEffect(() => {
+    // Checked match
+  }, [isMatch]);
 
   return (
     <HStack gap={6} alignItems="center">
-      <IconButton variant="ghost" onClick={async () => {
-        // TODO: add query like
-        if (await LikeUser(data.username, !isLike)) {
-          setIsLike(!isLike);
-        }
-      }}>
-        <LikeIcon checked={isLike}/>
+      <IconButton
+        variant="ghost"
+        onClick={async () => {
+          if (await LikeUser(data.username, !isLike)) {
+            setIsLike(!isLike);
+          }
+        }}
+      >
+        <LikeIcon checked={isLike} />
       </IconButton>
-      {isMatch &&
-          <IconButton variant="ghost" onClick={async () => {
+      {isMatch && (
+        <IconButton
+          variant="ghost"
+          onClick={async () => {
             await navigate({
               to: "/match",
               search: {
                 id: data.username,
               },
             });
-          }}>
-              <ConversationIcon/>
-          </IconButton>
-      }
-      <IconButton variant="ghost" onClick={() => {
-        // TODO: add query bock
-        setIsBlock(!isBlock);
-      }}>
-        <BlockIcon checked={isBlock}/>
+          }}
+        >
+          <ConversationIcon />
+        </IconButton>
+      )}
+      <IconButton
+        variant="ghost"
+        onClick={() => {
+          // TODO: add query bock
+          setIsBlock(!isBlock);
+        }}
+      >
+        <BlockIcon checked={isBlock} />
       </IconButton>
     </HStack>
   );

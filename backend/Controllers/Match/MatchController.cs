@@ -25,25 +25,29 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
     public async Task<ActionResult> GetList([FromHeader] string authorization)
     {
         try {
-            var id = JwtHelper.DecodeJwtToken(authorization);
+            var token = JwtHelper.DecodeJwtToken(authorization);
             var matches = new List<MatchModel>();
             
             await using MySqlConnection conn = DbHelper.GetOpenConnection();
             await using MySqlCommand cmd = new MySqlCommand("GetUserMatches", conn);
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@userID", id);
+            cmd.Parameters.AddWithValue("@userID", token.id);
             
             using var reader = cmd.ExecuteReaderAsync();
             while (await reader.Result.ReadAsync()) {
+                var firstName = reader.Result["first_name"].ToString() ?? "";
+                var lastName = reader.Result["last_name"].ToString() ?? "";
+                
                 var match = new MatchModel
                 {
                     Username = reader.Result["username"].ToString() ?? "",
-                    FirstName = reader.Result["first_name"].ToString() ?? "",
-                    LastName = reader.Result["last_name"].ToString() ?? "",
+                    Name = firstName + " " + lastName,
                     ImageUrl = reader.Result["image_url"].ToString() ?? ""
                 };
                 matches.Add(match);
             }
+            
+            await reader.Result.CloseAsync();
             
             return Ok(matches);
         }

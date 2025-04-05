@@ -3,23 +3,41 @@ import {
   HStack,
   Circle,
   Float,
-  Button, IconButton,
+  Button,
+  IconButton,
 } from "@chakra-ui/react";
-import {Avatar} from "@/components/ui/avatar"
-import {useNavigate} from "@tanstack/react-router";
-import {ConversationIcon} from "@/components/Icons.tsx";
-import {MatchListType} from "@/routes/_app/match.tsx";
+import { Avatar } from "@/components/ui/avatar";
+import { useNavigate } from "@tanstack/react-router";
+import { ConversationIcon } from "@/components/Icons.tsx";
+import { Match } from "@/lib/interface.ts";
 
-export function MatchList({props, setId}: { props: MatchListType; setId: (value: number) => void }) {
+export function MatchList({
+  userData,
+  setUsername,
+}: {
+  userData: Match;
+  setUsername: (value: string) => void;
+}) {
   const navigate = useNavigate();
   return (
-    <HStack key={props.id} gap="4" w={'250px'} h='fit-content' rounded="md" p={2} borderWidth="1px"
-            borderColor="gray.200">
-      <Button variant={'ghost'}
-              onClick={async () => {
-                await navigate({to: '/profile/' + props.id});
-              }}>
-        <Avatar name={props.name} size="lg" src={props.avatar}>
+    <HStack
+      key={userData.username}
+      gap="4"
+      w={"250px"}
+      h="fit-content"
+      rounded="md"
+      p={2}
+      borderWidth="1px"
+      borderColor="gray.200"
+    >
+      <Button
+        variant={"ghost"}
+        onClick={async () => {
+          // @ts-expect-error-error
+          await navigate({ to: "/profile/" + userData.username });
+        }}
+      >
+        <Avatar name={userData.name} size="lg" src={userData.imageUrl}>
           <Float placement="bottom-end" offsetX="1" offsetY="1">
             <Circle
               bg="green.500"
@@ -30,12 +48,14 @@ export function MatchList({props, setId}: { props: MatchListType; setId: (value:
           </Float>
         </Avatar>
       </Button>
-      <Text fontWeight="medium">{props.name}</Text>
-      <IconButton variant={'ghost'}
-                  onClick={() => {
-                    setId(props.id);
-                  }}>
-        <ConversationIcon/>
+      <Text fontWeight="medium">{userData.name}</Text>
+      <IconButton
+        variant={"ghost"}
+        onClick={() => {
+          setUsername(userData.username);
+        }}
+      >
+        <ConversationIcon />
       </IconButton>
     </HStack>
   );

@@ -6,12 +6,10 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import { IAuthContext } from "@/auth.tsx";
 import { Center, Flex, VStack } from "@chakra-ui/react";
 import Footer from "@/components/navigation/Footer.tsx";
 
 export interface MyRooterContext {
-  auth: IAuthContext;
   queryClient: QueryClient;
 }
 

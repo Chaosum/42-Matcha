@@ -15,7 +15,6 @@ import { Route as AuthImport } from './routes/_auth'
 import { Route as AppImport } from './routes/_app'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthAuthImport } from './routes/_auth/auth_'
-import { Route as AppSearchImport } from './routes/_app/search'
 import { Route as AppMatchImport } from './routes/_app/match'
 import { Route as AppLikesImport } from './routes/_app/likes'
 import { Route as AppHomeImport } from './routes/_app/home'
@@ -52,12 +51,6 @@ const AuthAuthRoute = AuthAuthImport.update({
   id: '/auth_',
   path: '/auth',
   getParentRoute: () => AuthRoute,
-} as any)
-
-const AppSearchRoute = AppSearchImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => AppRoute,
 } as any)
 
 const AppMatchRoute = AppMatchImport.update({
@@ -191,13 +184,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMatchImport
       parentRoute: typeof AppImport
     }
-    '/_app/search': {
-      id: '/_app/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof AppSearchImport
-      parentRoute: typeof AppImport
-    }
     '/_auth/auth_': {
       id: '/_auth/auth_'
       path: '/auth'
@@ -278,7 +264,6 @@ interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppLikesRoute: typeof AppLikesRoute
   AppMatchRoute: typeof AppMatchRoute
-  AppSearchRoute: typeof AppSearchRoute
   AppProfileUsernameRoute: typeof AppProfileUsernameRoute
   AppProfileEditImagesRoute: typeof AppProfileEditImagesRoute
   AppProfileEditInfoRoute: typeof AppProfileEditInfoRoute
@@ -290,7 +275,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppHomeRoute: AppHomeRoute,
   AppLikesRoute: AppLikesRoute,
   AppMatchRoute: AppMatchRoute,
-  AppSearchRoute: AppSearchRoute,
   AppProfileUsernameRoute: AppProfileUsernameRoute,
   AppProfileEditImagesRoute: AppProfileEditImagesRoute,
   AppProfileEditInfoRoute: AppProfileEditInfoRoute,
@@ -326,7 +310,6 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/likes': typeof AppLikesRoute
   '/match': typeof AppMatchRoute
-  '/search': typeof AppSearchRoute
   '/auth': typeof AuthAuthRoute
   '/profile/$username': typeof AppProfileUsernameRoute
   '/profile/edit-images': typeof AppProfileEditImagesRoute
@@ -346,7 +329,6 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/likes': typeof AppLikesRoute
   '/match': typeof AppMatchRoute
-  '/search': typeof AppSearchRoute
   '/auth': typeof AuthAuthRoute
   '/profile/$username': typeof AppProfileUsernameRoute
   '/profile/edit-images': typeof AppProfileEditImagesRoute
@@ -368,7 +350,6 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/_app/likes': typeof AppLikesRoute
   '/_app/match': typeof AppMatchRoute
-  '/_app/search': typeof AppSearchRoute
   '/_auth/auth_': typeof AuthAuthRoute
   '/_app/profile/$username': typeof AppProfileUsernameRoute
   '/_app/profile/edit-images': typeof AppProfileEditImagesRoute
@@ -390,7 +371,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/likes'
     | '/match'
-    | '/search'
     | '/auth'
     | '/profile/$username'
     | '/profile/edit-images'
@@ -409,7 +389,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/likes'
     | '/match'
-    | '/search'
     | '/auth'
     | '/profile/$username'
     | '/profile/edit-images'
@@ -429,7 +408,6 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/likes'
     | '/_app/match'
-    | '/_app/search'
     | '/_auth/auth_'
     | '/_app/profile/$username'
     | '/_app/profile/edit-images'
@@ -480,7 +458,6 @@ export const routeTree = rootRoute
         "/_app/home",
         "/_app/likes",
         "/_app/match",
-        "/_app/search",
         "/_app/profile/$username",
         "/_app/profile/edit-images",
         "/_app/profile/edit-info",
@@ -512,10 +489,6 @@ export const routeTree = rootRoute
     },
     "/_app/match": {
       "filePath": "_app/match.tsx",
-      "parent": "/_app"
-    },
-    "/_app/search": {
-      "filePath": "_app/search.tsx",
       "parent": "/_app"
     },
     "/_auth/auth_": {

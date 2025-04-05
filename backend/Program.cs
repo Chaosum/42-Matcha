@@ -62,7 +62,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero // Optional: Set to zero to remove delay of token expiration
     };
 });
 builder.Services.AddAuthorization();

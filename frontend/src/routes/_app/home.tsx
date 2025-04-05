@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Button, Flex, HStack, Image, VStack } from "@chakra-ui/react";
-import { LikeIcon, ProfileIcon, SkipIcon } from "@/components/Icons.tsx";
+import { Flex, Image, VStack } from "@chakra-ui/react";
 
 export const Route = createFileRoute("/_app/home")({
   component: RouteComponent,
@@ -16,17 +15,6 @@ function RouteComponent() {
           aspectRatio={4 / 5}
           width="md"
         />
-        <HStack gap={20} justifyContent={"center"}>
-          <Button variant={"ghost"}>
-            <SkipIcon />
-          </Button>
-          <Button variant={"ghost"}>
-            <ProfileIcon />
-          </Button>
-          <Button variant={"ghost"}>
-            <LikeIcon />
-          </Button>
-        </HStack>
       </Flex>
     </VStack>
   );

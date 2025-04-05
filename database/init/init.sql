@@ -95,10 +95,8 @@ CREATE TABLE message (
     receiverId INT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     content VARCHAR(255),
-    message_status_id INT NOT NULL DEFAULT 0,
     FOREIGN KEY (senderId) REFERENCES users(id),
     FOREIGN KEY (receiverId) REFERENCES users(id),
-    FOREIGN KEY (message_status_id) REFERENCES status(id),
     FOREIGN KEY (match_id) REFERENCES `match`(id)
 );
 
@@ -107,9 +105,9 @@ CREATE TABLE notification (
     userid INT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     content VARCHAR(255) NOT NULL,
-    statusid INT NOT NULL,
+    statusId INT NOT NULL,
     FOREIGN KEY (userid) REFERENCES users(id),
-    FOREIGN KEY (statusid) REFERENCES status(id)
+    FOREIGN KEY (statusId) REFERENCES status(id)
 );
 
 CREATE TABLE views (

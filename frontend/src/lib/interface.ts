@@ -1,3 +1,5 @@
+import { createContext } from "react";
+
 export interface UserProfile {
   username: string;
   firstName: string;
@@ -30,3 +32,34 @@ export enum ProfileStatus {
   IMAGES = 1,
   COMPLETED = 2,
 }
+
+export interface IUserContext {
+  profileData: UserProfile;
+  setProfileData: (user: UserProfile) => void;
+}
+export const UserContext = createContext<IUserContext | null>(null);
+
+export enum Actor {
+  SENDER,
+  RECEIVER,
+}
+
+export type MessageProps = {
+  id: string;
+  text: string;
+  timestamp: Date;
+  actor: Actor;
+};
+
+export type ChatMessage = {
+  SenderUsername: string;
+  ReceiverUsername: string;
+  Message: string;
+  Timestamp: string;
+};
+
+export type Match = {
+  username: string;
+  name: string;
+  imageUrl: string;
+};

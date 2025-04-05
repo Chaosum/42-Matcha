@@ -2,8 +2,8 @@ import { Button, Input, VStack } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 import { UseFormReturn } from "react-hook-form";
-import { LoginFormValues } from "@/routes/auth/login.tsx";
 import { FormEventHandler } from "react";
+import { LoginFormValues } from "@/routes/_auth/auth.login.tsx";
 
 export function LoginForm(props: {
   form: UseFormReturn<LoginFormValues>;
