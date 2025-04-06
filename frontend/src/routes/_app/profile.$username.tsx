@@ -8,6 +8,7 @@ export const Route = createFileRoute("/_app/profile/$username")({
   component: RouteComponent,
   loader: async ({ params }: { context: MyRooterContext; params: never }) => {
     const { username } = params as { username: string };
+    //TODO: Add to visit history and send notification to the user
     return await GetUserProfile(username);
   },
 });

@@ -13,6 +13,7 @@ import {
   EditIcon,
   EditImages,
   LikeIcon,
+  ReportIcon,
 } from "@/components/Icons.tsx";
 import { UserImage } from "@/components/UserImage.tsx";
 import { UserProfile } from "@/lib/interface.ts";
@@ -24,8 +25,6 @@ import { LikeUser } from "@/lib/query.ts";
 export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
   const navigate = useNavigate({ from: Route.fullPath });
   const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
-
-  console.log("Profile data", data);
 
   return (
     <Flex
@@ -187,11 +186,19 @@ function UserAction({ data }: { data: UserProfile }) {
       <IconButton
         variant="ghost"
         onClick={() => {
-          // TODO: add query bock
+          // TODO: add query block
           setIsBlock(!isBlock);
         }}
       >
         <BlockIcon checked={isBlock} />
+      </IconButton>
+      <IconButton
+        variant="ghost"
+        onClick={() => {
+          // TODO: add query report
+        }}
+      >
+        <ReportIcon />
       </IconButton>
     </HStack>
   );

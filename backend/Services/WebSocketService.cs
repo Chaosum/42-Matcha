@@ -13,12 +13,12 @@ public interface IWebSocketService
 
 public class WebSocketService(ILogger<IWebSocketService> logger): IWebSocketService
 {
-    private readonly ConcurrentDictionary<int, WebSocket> _connections = new();
+    private readonly ConcurrentDictionary<string, WebSocket> _connections = new();
     
     public async Task HandleWebsocket(WebSocket ws)
     {
         var buffer = new byte[4096];
-        var id = 0;
+        var username = string.Empty;
         
         try
         {
@@ -52,7 +52,7 @@ public class WebSocketService(ILogger<IWebSocketService> logger): IWebSocketServ
                             receiveResult.CloseStatus.Value,
                             receiveResult.CloseStatusDescription,
                             CancellationToken.None);
-                        if (id > 0 && !_connections.TryRemove(id, out _)) {
+                        if (!_connections.TryRemove(username, out _)) {
                             logger.LogError("Failed to remove socket");
                         }
                         logger.LogDebug($"Socket count: {_connections.Count}");
@@ -65,17 +65,17 @@ public class WebSocketService(ILogger<IWebSocketService> logger): IWebSocketServ
                 {
                     logger.LogInformation("Connection request");
                     
-                    id = Utils.JwtHelper.DecodeJwtToken(message.Data as string ?? "").id;
-                    if (_connections.ContainsKey(id)) {
-                        logger.LogWarning("Connection already exists for id: {id}", id);
-                        _connections.TryGetValue(id, out var existing);
-                        _connections.TryUpdate(id, ws, existing!);
+                    username = Utils.JwtHelper.DecodeJwtToken(message.Data as string ?? "").username;
+                    if (_connections.ContainsKey(username)) {
+                        logger.LogWarning("Connection already exists for username: {username}", username);
+                        _connections.TryGetValue(username, out var existing);
+                        _connections.TryUpdate(username, ws, existing!);
                     }
                     else
                     {
-                        var tryAdd = _connections.TryAdd(id, ws);
+                        var tryAdd = _connections.TryAdd(username, ws);
                         if (!tryAdd) {
-                            logger.LogError("Failed to add socket for id: {id}", id);
+                            logger.LogError("Failed to add socket for username: {username}", username);
                         }
                     }
                     
@@ -102,8 +102,11 @@ public class WebSocketService(ILogger<IWebSocketService> logger): IWebSocketServ
                         logger.LogError("Failed to deserialize message");
                         continue;
                     }
-                    logger.LogInformation($"Chat message: {msg.Message} - {msg.Timestamp} - {msg.ReceiverId}");
-                    if (!_connections.TryGetValue(msg.ReceiverId, out WebSocket receiver))
+                    
+                    // TODO: store message in database
+                    
+                    logger.LogInformation($"Chat message: {msg.Message} - {msg.Timestamp} - {msg.ReceiverUsername}");
+                    if (!_connections.TryGetValue(msg.ReceiverUsername, out WebSocket receiver))
                     {
                         logger.LogError("Receiver not found");
                         continue;
@@ -112,13 +115,7 @@ public class WebSocketService(ILogger<IWebSocketService> logger): IWebSocketServ
                     var msgData = new WebsocketMessage
                     {
                         Message = "chat",
-                        Data = new MessageModel 
-                        {
-                            SenderId = id,
-                            ReceiverId = msg.ReceiverId,
-                            Timestamp = msg.Timestamp,
-                            Message = msg.Message
-                        }
+                        Data = msg
                     };
                     var msgJson = JsonConvert.SerializeObject(msgData);
                     await receiver.SendAsync(
@@ -133,7 +130,7 @@ public class WebSocketService(ILogger<IWebSocketService> logger): IWebSocketServ
         }
         catch (WebSocketException wse)
         {
-            if (id > 0 && !_connections.TryRemove(id, out _))
+            if (!_connections.TryRemove(username, out _))
                 logger.LogError("Failed to remove socket");
             logger.LogError($"WebSocketException: {wse.Message}");
             logger.LogError($"WebSocketException: {wse.StackTrace}");

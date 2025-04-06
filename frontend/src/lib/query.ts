@@ -2,7 +2,8 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { getUserToken, setUserToken } from "@/auth.tsx";
 import { ToasterError, ToasterSuccess } from "@/lib/toaster.ts";
 import { UserProfileFormValue } from "@/routes/_app/profile.edit-info.tsx";
-import { Match, Message, Tags, UserProfile } from "@/lib/interface.ts";
+import { Match, Tags, UserProfile } from "@/lib/interface.ts";
+import { ChatMessage } from "@/lib/Websocket.ts";
 
 axios.defaults.baseURL = "http://localhost:5163";
 axios.interceptors.response.use(
@@ -268,7 +269,7 @@ export async function GetMessages(username: string) {
         Authorization: "Bearer " + getUserToken(),
       },
     })
-    .then((response: AxiosResponse<Message[]>) => {
+    .then((response: AxiosResponse<ChatMessage[]>) => {
       console.log(response.data);
       return response.data;
     })

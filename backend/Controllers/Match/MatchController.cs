@@ -77,7 +77,7 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
             cmd.Parameters.AddWithValue("@likedUser", data.Username);
             cmd.Parameters.AddWithValue("@isLike", data.Liked);
             
-            // Add out paranmeter for match status
+            // Add out parameter for match status
             var matchStatus = new MySqlParameter("@matchStatus", MySqlDbType.Int32) {
                 Direction = ParameterDirection.Output
             };

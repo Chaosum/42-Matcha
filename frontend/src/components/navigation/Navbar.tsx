@@ -29,7 +29,6 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover.tsx";
-import { Route } from "@/routes/_app/profile.edit-images.tsx";
 import { useContext, useEffect, useState } from "react";
 import { DownloadImage } from "@/lib/query.ts";
 import { UserContext } from "@/lib/interface.ts";
@@ -116,7 +115,7 @@ function NotificationButton() {
 }
 
 const NavbarMenu = () => {
-  const navigate = useNavigate({ from: Route.fullPath });
+  const navigate = useNavigate();
   const image = useContext(UserContext)?.profileData?.images[0];
   const [avatar, setAvatar] = useState<string>("");
 

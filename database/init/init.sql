@@ -119,6 +119,15 @@ CREATE TABLE views (
     FOREIGN KEY (userid_seen) REFERENCES users(id)
 );
 
+CREATE TABLE reports (
+   userid INT,
+   userid_reported INT,
+   created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (userid, userid_reported),
+   FOREIGN KEY (userid) REFERENCES users(id),
+   FOREIGN KEY (userid_reported) REFERENCES users(id)
+);
+
 DELIMITER //
 
 CREATE TRIGGER check_likes_for_match

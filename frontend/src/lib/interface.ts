@@ -39,27 +39,13 @@ export interface IUserContext {
 }
 export const UserContext = createContext<IUserContext | null>(null);
 
-export enum Actor {
-  SENDER,
-  RECEIVER,
-}
-
-export type MessageProps = {
-  id: string;
-  text: string;
-  timestamp: Date;
-  actor: Actor;
-};
-
-export type ChatMessage = {
-  SenderUsername: string;
-  ReceiverUsername: string;
-  Message: string;
-  Timestamp: string;
-};
-
 export type Match = {
   username: string;
   name: string;
   imageUrl: string;
 };
+
+export enum Actor {
+  SENDER,
+  RECEIVER,
+}
