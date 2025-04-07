@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Button, Flex, HStack, Image, VStack } from "@chakra-ui/react";
-import { LikeIcon, ProfileIcon, SkipIcon } from "@/components/Icons.tsx";
 import { Dating, FiltersModel } from "@/lib/query"; // Assurez-vous d'importer FiltersModel correctement depuis query.ts
 import { useEffect, useState } from "react";
 
