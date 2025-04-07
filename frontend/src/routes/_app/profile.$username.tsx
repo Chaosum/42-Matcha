@@ -6,15 +6,10 @@ import { UserProfile } from "@/lib/interface.ts";
 
 export const Route = createFileRoute("/_app/profile/$username")({
   component: RouteComponent,
-  loader: async ({
-    context,
-    params,
-  }: {
-    context: MyRooterContext;
-    params: never;
-  }) => {
+  loader: async ({ params }: { context: MyRooterContext; params: never }) => {
     const { username } = params as { username: string };
-    return await GetUserProfile(username, context.auth);
+    //TODO: Add to visit history and send notification to the user
+    return await GetUserProfile(username);
   },
 });
 

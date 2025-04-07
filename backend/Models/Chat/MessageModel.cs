@@ -12,12 +12,10 @@ public class WebsocketMessage
 
 public class MessageModel
 {
-    // [JsonIgnore]
-    // public int Id { get; set; }
-    [JsonIgnore]
-    public int SenderId { get; set; }
     [JsonProperty]
-    public int ReceiverId { get; set; }
+    public string? SenderUsername { get; set; }
+    [JsonProperty]
+    public string? ReceiverUsername { get; set; }
     [JsonProperty]
     public string? Timestamp { get; set; }
     [JsonProperty]

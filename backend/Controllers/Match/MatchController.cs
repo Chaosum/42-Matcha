@@ -22,28 +22,32 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
     [Route("[action]")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Get([FromHeader] string authorization)
+    public async Task<ActionResult> GetList([FromHeader] string authorization)
     {
         try {
-            var id = JwtHelper.DecodeJwtToken(authorization);
+            var token = JwtHelper.DecodeJwtToken(authorization);
             var matches = new List<MatchModel>();
             
             await using MySqlConnection conn = DbHelper.GetOpenConnection();
             await using MySqlCommand cmd = new MySqlCommand("GetUserMatches", conn);
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@userID", id);
+            cmd.Parameters.AddWithValue("@userID", token.id);
             
             using var reader = cmd.ExecuteReaderAsync();
             while (await reader.Result.ReadAsync()) {
+                var firstName = reader.Result["first_name"].ToString() ?? "";
+                var lastName = reader.Result["last_name"].ToString() ?? "";
+                
                 var match = new MatchModel
                 {
                     Username = reader.Result["username"].ToString() ?? "",
-                    FirstName = reader.Result["first_name"].ToString() ?? "",
-                    LastName = reader.Result["last_name"].ToString() ?? "",
+                    Name = firstName + " " + lastName,
                     ImageUrl = reader.Result["image_url"].ToString() ?? ""
                 };
                 matches.Add(match);
             }
+            
+            await reader.Result.CloseAsync();
             
             return Ok(matches);
         }
@@ -61,7 +65,7 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Like([FromHeader] string authorization, [FromBody] string username)
+    public async Task<ActionResult> Like([FromHeader] string authorization, [FromBody] LikeModel data)
     {
         try {
             var token = JwtHelper.DecodeJwtToken(authorization);
@@ -70,12 +74,25 @@ public class MatchController(ILogger<MatchController> logger): ControllerBase
             await using MySqlCommand cmd = new MySqlCommand("LikeUser", conn);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@userID", token.id);
-            cmd.Parameters.AddWithValue("@username", username);
-            cmd.Parameters.AddWithValue("@isLike", true);
+            cmd.Parameters.AddWithValue("@likedUser", data.Username);
+            cmd.Parameters.AddWithValue("@isLike", data.Liked);
+            
+            // Add out parameter for match status
+            var matchStatus = new MySqlParameter("@matchStatus", MySqlDbType.Int32) {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(matchStatus);
             
             await cmd.ExecuteNonQueryAsync();
+
+            var status = matchStatus.Value as int? > 0;
             
-            return Ok();
+            return Ok(new AcceptedResult {
+                Value = new {
+                    matchStatus = status,
+                    message = status ? "It's a match!" : "Like sent"
+                },
+            });
         }
         catch (MySqlException e) {
             logger.LogError(message: e.Message);

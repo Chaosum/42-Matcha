@@ -1,3 +1,5 @@
+import { createContext } from "react";
+
 export interface UserProfile {
   username: string;
   firstName: string;
@@ -14,6 +16,10 @@ export interface UserProfile {
   gender: number;
   sexualOrientation: number;
   status: number;
+  isLiked: boolean;
+  isMatched: boolean;
+  isBlocked: boolean;
+  isBan: boolean;
 }
 
 export interface Tags {
@@ -25,4 +31,21 @@ export enum ProfileStatus {
   INFO = 0,
   IMAGES = 1,
   COMPLETED = 2,
+}
+
+export interface IUserContext {
+  profileData: UserProfile;
+  setProfileData: (user: UserProfile) => void;
+}
+export const UserContext = createContext<IUserContext | null>(null);
+
+export type Match = {
+  username: string;
+  name: string;
+  imageUrl: string;
+};
+
+export enum Actor {
+  SENDER,
+  RECEIVER,
 }

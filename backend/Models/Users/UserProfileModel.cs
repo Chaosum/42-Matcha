@@ -52,8 +52,11 @@ public class UserProfileModel
     public int? Status {get;set;}
 
     [SwaggerIgnore] 
-    public bool Liked { get; set; }
+    public bool? isLiked { get; set; }
     
     [SwaggerIgnore]
-    public bool Match {get;set;}
+    public bool? isMatched {get;set;}
+    
+    [SwaggerIgnore]
+    public bool? isBlocked {get;set;}
 }

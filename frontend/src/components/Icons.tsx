@@ -39,7 +39,7 @@ export function SunIcon() {
   );
 }
 
-export function LikeIcon() {
+export function LikeIcon({ checked }: { checked: boolean }) {
   return (
     <Icon aria-label="Like" className={"user-icon"}>
       <svg
@@ -47,7 +47,7 @@ export function LikeIcon() {
         width="24"
         height="24"
         viewBox="0 0 24 24"
-        fill="none"
+        fill={checked ? "currentColor" : "none"}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -55,29 +55,6 @@ export function LikeIcon() {
         className="lucide lucide-heart-icon lucide-heart"
       >
         <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-      </svg>
-    </Icon>
-  );
-}
-
-export function Unlike() {
-  return (
-    <Icon aria-label="unLike" className={"user-icon"}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="lucide lucide-heart-off-icon lucide-heart-off"
-      >
-        <line x1="2" y1="2" x2="22" y2="22" />
-        <path d="M16.5 16.5 12 21l-7-7c-1.5-1.45-3-3.2-3-5.5a5.5 5.5 0 0 1 2.14-4.35" />
-        <path d="M8.76 3.1c1.15.22 2.13.78 3.24 1.9 1.5-1.5 2.74-2 4.5-2A5.5 5.5 0 0 1 22 8.5c0 2.12-1.3 3.78-2.67 5.17" />
       </svg>
     </Icon>
   );
@@ -312,7 +289,7 @@ export function DefaultAvatar() {
   );
 }
 
-export function BlockIcon() {
+export function BlockIcon({ checked }: { checked: boolean }) {
   return (
     <Icon aria-label={"Block"} className={"user-icon"}>
       <svg
@@ -320,7 +297,7 @@ export function BlockIcon() {
         width="20"
         height="20"
         viewBox="0 0 24 24"
-        fill="none"
+        fill={checked ? "currentColor" : "none"}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -350,6 +327,28 @@ export function UnBlockIcon() {
       >
         <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
         <path d="m4.243 5.21 14.39 12.472" />
+      </svg>
+    </Icon>
+  );
+}
+
+export function ReportIcon() {
+  return (
+    <Icon aria-label={"Report"} className={"user-icon"}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-flag-icon lucide-flag"
+      >
+        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+        <line x1="4" x2="4" y1="22" y2="15" />
       </svg>
     </Icon>
   );

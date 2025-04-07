@@ -16,16 +16,34 @@ END //
 
 CREATE PROCEDURE GetLikeAndMatch(
     IN userID INT,
-    IN likedUser VARCHAR(50)
+    IN otherUser VARCHAR(50),
+    OUT isLiked INT,
+    OUT isBlocked INT,
+    OUT isMatched INT
 )
 BEGIN 
-    SELECT id INTO @likedUserID FROM users WHERE username = likedUser;
+    SELECT id INTO @otherUserID FROM users WHERE username = otherUser;
     
-    SELECT COUNT(*) FROM liked WHERE first_userid = userID AND second_userid = @likedUserID;
-    SELECT COUNT(*) FROM liked WHERE first_userid = @likedUserID AND second_userid = userID;
+    SELECT first_user_like_status INTO @first FROM liked 
+        WHERE first_userid = userID AND second_userid = @otherUserID;
     
-    SELECT COUNT(*) FROM `match` WHERE first_userid = userID AND second_userid = @likedUserID OR
-                                        first_userid = @likedUserID AND second_userid = userID;
+    IF @first IS NOT NULL THEN
+        SET isLiked = @first;
+    ELSE
+        SELECT second_user_like_status INTO @second FROM liked 
+            WHERE first_userid = @otherUserID AND second_userid = userID;
+        
+        IF @second IS NOT NULL THEN
+            SET isLiked = @second;
+        END IF;
+    END IF;
+    
+    SELECT COUNT(*) INTO isBlocked FROM blocked 
+        WHERE from_userid = userID AND to_userid = @otherUserID;
+
+    SELECT status INTO isMatched FROM `match` 
+        WHERE (first_userid = userID AND second_userid = @otherUserID OR
+                first_userid = @otherUserID AND second_userid = userID);
 END //
 
 CREATE PROCEDURE GetUserProfileStatus(IN userID INT)
@@ -381,18 +399,18 @@ BEGIN
     SELECT id INTO @user2id FROM users WHERE username = likedUser;
     
     SELECT COUNT(*) INTO @count FROM liked 
-            WHERE first_userid = userID AND second_userid = likedUser OR 
-                    first_userid = likedUser AND second_userid = userID;
+            WHERE first_userid = userID AND second_userid = @user2id OR 
+                    first_userid = @user2id AND second_userid = userID;
     
     IF @count = 0 THEN
         INSERT INTO liked (first_userid, second_userid, first_user_like_status)
-            VALUES (userID, likedUser, isLike);
+            VALUES (userID, @user2id, isLike);
     ELSE
         UPDATE liked SET first_user_like_status = isLike
-            WHERE (first_userid = userID AND second_userid = likedUser);
+            WHERE (first_userid = userID AND second_userid = @user2id);
         UPDATE liked SET second_user_like_status = isLike
-            WHERE (first_userid = likedUser AND second_userid = userID);
-    END IF;  
+            WHERE (first_userid = @user2id AND second_userid = userID);
+    END IF;
 END //
 
 DELIMITER ;

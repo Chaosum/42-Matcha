@@ -4,32 +4,26 @@ import {
   ParsedLocation,
   redirect,
 } from "@tanstack/react-router";
-import {MyRooterContext} from "@/routes/__root.tsx";
 import Navbar from "@/components/navigation/Navbar.tsx";
-import {Box} from "@chakra-ui/react";
-import {GetMeProfile} from "@/lib/query.ts";
-import {ProfileStatus, UserProfile} from "@/lib/interface.ts";
-import {createContext, useState} from "react";
-import {ToasterError} from "@/lib/toaster.ts";
+import { Box } from "@chakra-ui/react";
+import { GetMeProfile } from "@/lib/query.ts";
+import { ProfileStatus, UserContext, UserProfile } from "@/lib/interface.ts";
+import { useState } from "react";
+import { ToasterError } from "@/lib/toaster.ts";
+import { getUserToken } from "@/auth.tsx";
 
 export const Route = createFileRoute("/_app")({
   component: RouteComponent,
-  beforeLoad: async ({context}: { context: MyRooterContext }) => {
-    if (!context.auth.isAuthenticated) {
+  beforeLoad: async () => {
+    if (!getUserToken()) {
       ToasterError("Erreur", "Vous n'êtes pas connecté");
       throw redirect({
         to: "/auth/login",
       });
     }
   },
-  loader: async ({
-                   context,
-                   location,
-                 }: {
-    context: MyRooterContext;
-    location: ParsedLocation;
-  }) => {
-    const profile = await GetMeProfile(context.auth);
+  loader: async ({ location }: { location: ParsedLocation }) => {
+    const profile = await GetMeProfile();
     if (!profile) return;
 
     const search = new URLSearchParams(location.search);
@@ -62,22 +56,15 @@ export const Route = createFileRoute("/_app")({
   },
 });
 
-export interface IUserContext {
-  profileData: UserProfile;
-  setProfileData: (user: UserProfile) => void;
-}
-
-export const UserContext = createContext<IUserContext | null>(null);
-
 function RouteComponent() {
   const data = Route.useLoaderData() as UserProfile;
   const [profileData, setProfileData] = useState<UserProfile>(data);
 
   return (
-    <UserContext.Provider value={{profileData, setProfileData}}>
-      <Navbar/>
+    <UserContext.Provider value={{ profileData, setProfileData }}>
+      <Navbar />
       <Box flexGrow="1" p={5}>
-        <Outlet/>
+        <Outlet />
       </Box>
     </UserContext.Provider>
   );

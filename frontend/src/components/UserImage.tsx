@@ -1,30 +1,30 @@
-import {useEffect, useState} from "react";
-import {Box, Image} from "@chakra-ui/react";
-import {DownloadImage} from "@/lib/query.ts";
-import {useAuth} from "@/auth.tsx";
+import { useEffect, useState } from "react";
+import { Box, Image } from "@chakra-ui/react";
+import { DownloadImage } from "@/lib/query.ts";
+import { AxiosError } from "axios";
 
 export function UserImage({
-                            imageName,
-                            width,
-                            height,
-                            borderRadius,
-                          }: {
+  imageName,
+  width,
+  height,
+  borderRadius,
+}: {
   imageName?: string;
   width?: string;
   height?: string;
   borderRadius?: string;
 }) {
   const [image, setImage] = useState<string>("");
-  const auth = useAuth();
 
   useEffect(() => {
     if (!imageName) return;
-    DownloadImage(imageName).then((data) => {
-      setImage(data.data);
-    }).catch(async (error) => {
-      if (error.status) await auth.logout();
-      console.error(error);
-    });
+    DownloadImage(imageName)
+      .then((data) => {
+        setImage(data.data);
+      })
+      .catch((error: AxiosError) => {
+        console.error(error);
+      });
   }, []);
 
   return (
