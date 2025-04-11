@@ -1,28 +1,28 @@
 ﻿services:
-  backend:
-    image: backend
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    restart: always
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - DB_CONNECTION_STRING=$DB_CONNECTION_STRING
-      - JWT_SECRET=$JWT_SECRET
-      - JWT_ISSUER=$JWT_ISSUER
-      - JWT_AUDIENCE=$JWT_AUDIENCE
-      - NO_REPLY_MAIL=$NO_REPLY_MAIL
-      - NO_REPLY_MAIL_PASSWORD=NO_REPLY_MAIL_PASSWORD
-      - SMTP_HOST=$SMTP_HOST
-      - SMTP_PORT=$SMTP_PORT
-    networks:
-      - back-net
-      - front-net
-    ports:
-      - "5163:8080"
-    depends_on:
-      db:
-        condition: service_healthy
+  # backend:
+  #   image: backend
+  #   build:
+  #     context: .
+  #     dockerfile: backend/Dockerfile
+  #   restart: always
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - DB_CONNECTION_STRING=$DB_CONNECTION_STRING
+  #     - JWT_SECRET=$JWT_SECRET
+  #     - JWT_ISSUER=$JWT_ISSUER
+  #     - JWT_AUDIENCE=$JWT_AUDIENCE
+  #     - NO_REPLY_MAIL=$NO_REPLY_MAIL
+  #     - NO_REPLY_MAIL_PASSWORD=NO_REPLY_MAIL_PASSWORD
+  #     - SMTP_HOST=$SMTP_HOST
+  #     - SMTP_PORT=$SMTP_PORT
+  #   networks:
+  #     - back-net
+  #     - front-net
+  #   ports:
+  #     - "5163:8080"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
 
   db:
     image: mysql:latest
