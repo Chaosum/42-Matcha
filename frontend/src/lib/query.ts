@@ -280,7 +280,6 @@ export async function GetMessages(username: string) {
 }
 
 export type FiltersModel = {
-  id: string;
   range: number;
   ageGap: number;
   distanceGap: number;

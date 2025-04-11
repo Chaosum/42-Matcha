@@ -14,39 +14,47 @@ namespace backend.Controllers.App;
 [Route("App/")]
 public class DatingController : ControllerBase
 {
-    [HttpPost]
-    [Route("[action]")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult Dating([FromBody] FiltersModel matchingSettings, [FromHeader] string authorization)
-    {
-        var id = JwtHelper.DecodeJwtToken(authorization);
 
+    public FullUserProfileModel? GetUserProfile(string username)
+    {
         using MySqlConnection conn = DbHelper.GetOpenConnection();
         using MySqlCommand cmd = new MySqlCommand("GetUserProfile", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@userID", id);
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@username", username);
 
-            using MySqlDataReader reader = cmd.ExecuteReader();
-            if (!reader.Read()) return ValidationProblem();
-            
-            var profile = new UserProfileModel
-            {
-                Gender = reader.GetInt32("gender_id"),
-                SexualOrientation = reader.GetInt32("sexual_orientation"),
-                Coordinates = reader.GetString("coordinates"),
-                ProfileCompletionPercentage = reader.GetInt32("profile_completion_percentage"),
-                FameRating = reader.GetInt32("fame"),
-                birthDate = reader.GetDateTime("birth_date")
-            };
+        using MySqlDataReader reader = cmd.ExecuteReader();
+        if (!reader.Read()) return null;
+        
+        FullUserProfileModel profile = new FullUserProfileModel
+        {
+            id = reader.GetInt32("id"),
+            Username = reader.GetString("username"),
+            FirstName = reader.GetString("first_name"),
+            LastName = reader.GetString("last_name"),
+            Gender = reader.GetInt32("gender_id"),
+            SexualOrientation = reader.GetInt32("sexual_orientation"),
+            Biography = reader.GetString("biography"),
+            Coordinates = reader.GetString("coordinates"),
+            Address = reader.GetString("address"),
+            ProfileCompletionPercentage = reader.GetInt32("profile_completion_percentage"),
+            FameRating = reader.GetInt32("fame"),
+            IsVerified = reader.GetBoolean("is_verified"),
+            Tags = reader.GetString("tags").Split(","),
+            profilePictureUrl = reader.GetString("profile_picture"),
+            pictures = reader.GetString("pictures").Split(","),
+            birthDate = reader.GetDateTime("birth_date"),
+            Status = reader.GetInt32("profile_status")
+        };
+        return profile;
+    }
+
+    private List<ProfilesModel> GetMatchingProfiles(FiltersModel matchingSettings, FullUserProfileModel profile)
+    {
         using MySqlConnection dbClient = DbHelper.GetOpenConnection();
         using var command = new MySqlCommand("GetMatchingProfiles", dbClient);
         command.CommandType = CommandType.StoredProcedure;
 
-        // Paramètres : tu peux les adapter à ton modèle DatingModel
-        command.Parameters.AddWithValue("@ref_user_id", matchingSettings.id);
+        command.Parameters.AddWithValue("@ref_user_id", profile.id);
         command.Parameters.AddWithValue("@max_age_gap", matchingSettings.ageGap);
         command.Parameters.AddWithValue("@max_distance_gap", matchingSettings.distanceGap);
         command.Parameters.AddWithValue("fame_gap", matchingSettings.fameGap);
@@ -57,30 +65,60 @@ public class DatingController : ControllerBase
         command.Parameters.AddWithValue("ref_sexual_orientation_id", profile.SexualOrientation);
         command.Parameters.AddWithValue("ref_coordinates", profile.Coordinates);
         command.Parameters.AddWithValue("result_offset",matchingSettings.resultOffset);
-        command.Parameters.AddWithValue("result_resultLimit",matchingSettings.resultLimit);
-        
+        command.Parameters.AddWithValue("result_limit",matchingSettings.resultLimit);
+        var readerProfiles = command.ExecuteReader();
+        List<ProfilesModel> profilesMatchingFilters = new();
+        while (readerProfiles.Read())
+        {
+            profilesMatchingFilters.Add(new ProfilesModel
+            {
+                Id = readerProfiles.GetInt32("id"),
+                userName = readerProfiles.GetString("username"),
+                FirstName = readerProfiles.GetString("first_name"),
+                LastName = readerProfiles.GetString("last_name"),
+                age = CalculateAge(readerProfiles.GetDateTime("birth_date")),
+                address = readerProfiles.GetString("address"),
+                fame = readerProfiles.GetInt32("fame"),
+                tags = readerProfiles.GetString("tags").Split(','), // si tu as une colonne "tags" séparée par virgule
+                distance = readerProfiles.GetInt32("distance_to_ref"),
+                calculatedFame = readerProfiles.GetInt32("calculatedFame"),
+                profileImageUrl = readerProfiles.GetString("image_url"),
+                commonTags = readerProfiles.GetInt32("common_tags")
+            });
+        }
+        return profilesMatchingFilters;
+    }
+
+
+    [HttpPost]
+    [Route("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public IActionResult Dating([FromBody] FiltersModel matchingSettings)
+    {
+        //check le token si authorized
+        var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
+        if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
+        {
+          return Unauthorized("Missing or invalid token.");
+        }
+
+        //on extrait l'id et 'username du token
+        var token = authorizationHeader.Substring("Bearer ".Length).Trim();
+        (int id, string username) = JwtHelper.DecodeJwtToken(token);
+        //on recupere les infos de notre profile
+        FullUserProfileModel? profile = GetUserProfile(username);
+        if (profile == null)
+        {
+            return ValidationProblem();
+        }
+        //on recupere les profils qui match les gaps qu'on a renseigner
         try
         {
-            var readerProfiles = command.ExecuteReader();
             List<ProfilesModel> profilesMatchingFilters = new();
-            while (readerProfiles.Read())
-            {
-                profilesMatchingFilters.Add(new ProfilesModel
-                {
-                    Id = readerProfiles.GetInt32("id"),
-                    userName = readerProfiles.GetString("username"),
-                    FirstName = readerProfiles.GetString("first_name"),
-                    LastName = readerProfiles.GetString("last_name"),
-                    age = CalculateAge(readerProfiles.GetDateTime("birth_date")),
-                    address = readerProfiles.GetString("address"),
-                    tags = readerProfiles.GetString("tags").Split(','), // si tu as une colonne "tags" séparée par virgule
-                    distance = readerProfiles.GetInt32("distance_to_ref"),
-                    fame = readerProfiles.GetInt32("fame"),
-                    calculatedFame = readerProfiles.GetInt32("calculatedFame"),
-                    profileImageUrl = readerProfiles.GetString("image_url")
-                });
-            }
-
+            profilesMatchingFilters = GetMatchingProfiles(matchingSettings, profile);
             return Ok(profilesMatchingFilters);
         }
         catch (Exception ex)

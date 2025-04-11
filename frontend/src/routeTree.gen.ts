@@ -19,7 +19,6 @@ import { Route as AppMatchImport } from './routes/_app/match'
 import { Route as AppLikesImport } from './routes/_app/likes'
 import { Route as AppHomeImport } from './routes/_app/home'
 import { Route as AuthAuthRegisterImport } from './routes/_auth/auth.register'
-import { Route as AuthAuthNotVerifyImport } from './routes/_auth/auth.not-verify'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth.login'
 import { Route as AuthAuthForgottenpasswordImport } from './routes/_auth/auth.forgottenpassword'
 import { Route as AppProfileMeImport } from './routes/_app/profile.me'
@@ -73,12 +72,6 @@ const AppHomeRoute = AppHomeImport.update({
 const AuthAuthRegisterRoute = AuthAuthRegisterImport.update({
   id: '/auth/register',
   path: '/auth/register',
-  getParentRoute: () => AuthRoute,
-} as any)
-
-const AuthAuthNotVerifyRoute = AuthAuthNotVerifyImport.update({
-  id: '/auth/not-verify',
-  path: '/auth/not-verify',
   getParentRoute: () => AuthRoute,
 } as any)
 
@@ -219,13 +212,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAuthLoginImport
       parentRoute: typeof AuthImport
     }
-    '/_auth/auth/not-verify': {
-      id: '/_auth/auth/not-verify'
-      path: '/auth/not-verify'
-      fullPath: '/auth/not-verify'
-      preLoaderRoute: typeof AuthAuthNotVerifyImport
-      parentRoute: typeof AuthImport
-    }
     '/_auth/auth/register': {
       id: '/_auth/auth/register'
       path: '/auth/register'
@@ -271,7 +257,6 @@ interface AuthRouteChildren {
   AuthAuthRoute: typeof AuthAuthRoute
   AuthAuthForgottenpasswordRoute: typeof AuthAuthForgottenpasswordRoute
   AuthAuthLoginRoute: typeof AuthAuthLoginRoute
-  AuthAuthNotVerifyRoute: typeof AuthAuthNotVerifyRoute
   AuthAuthRegisterRoute: typeof AuthAuthRegisterRoute
   AuthAuthVerifyIdRoute: typeof AuthAuthVerifyIdRoute
 }
@@ -280,7 +265,6 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthAuthRoute: AuthAuthRoute,
   AuthAuthForgottenpasswordRoute: AuthAuthForgottenpasswordRoute,
   AuthAuthLoginRoute: AuthAuthLoginRoute,
-  AuthAuthNotVerifyRoute: AuthAuthNotVerifyRoute,
   AuthAuthRegisterRoute: AuthAuthRegisterRoute,
   AuthAuthVerifyIdRoute: AuthAuthVerifyIdRoute,
 }
@@ -300,7 +284,6 @@ export interface FileRoutesByFullPath {
   '/profile/me': typeof AppProfileMeRoute
   '/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/auth/login': typeof AuthAuthLoginRoute
-  '/auth/not-verify': typeof AuthAuthNotVerifyRoute
   '/auth/register': typeof AuthAuthRegisterRoute
   '/auth/verify/$id': typeof AuthAuthVerifyIdRoute
 }
@@ -318,7 +301,6 @@ export interface FileRoutesByTo {
   '/profile/me': typeof AppProfileMeRoute
   '/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/auth/login': typeof AuthAuthLoginRoute
-  '/auth/not-verify': typeof AuthAuthNotVerifyRoute
   '/auth/register': typeof AuthAuthRegisterRoute
   '/auth/verify/$id': typeof AuthAuthVerifyIdRoute
 }
@@ -338,7 +320,6 @@ export interface FileRoutesById {
   '/_app/profile/me': typeof AppProfileMeRoute
   '/_auth/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/_auth/auth/login': typeof AuthAuthLoginRoute
-  '/_auth/auth/not-verify': typeof AuthAuthNotVerifyRoute
   '/_auth/auth/register': typeof AuthAuthRegisterRoute
   '/_auth/auth/verify/$id': typeof AuthAuthVerifyIdRoute
 }
@@ -358,7 +339,6 @@ export interface FileRouteTypes {
     | '/profile/me'
     | '/auth/forgottenpassword'
     | '/auth/login'
-    | '/auth/not-verify'
     | '/auth/register'
     | '/auth/verify/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -375,7 +355,6 @@ export interface FileRouteTypes {
     | '/profile/me'
     | '/auth/forgottenpassword'
     | '/auth/login'
-    | '/auth/not-verify'
     | '/auth/register'
     | '/auth/verify/$id'
   id:
@@ -393,7 +372,6 @@ export interface FileRouteTypes {
     | '/_app/profile/me'
     | '/_auth/auth/forgottenpassword'
     | '/_auth/auth/login'
-    | '/_auth/auth/not-verify'
     | '/_auth/auth/register'
     | '/_auth/auth/verify/$id'
   fileRoutesById: FileRoutesById
@@ -447,7 +425,6 @@ export const routeTree = rootRoute
         "/_auth/auth_",
         "/_auth/auth/forgottenpassword",
         "/_auth/auth/login",
-        "/_auth/auth/not-verify",
         "/_auth/auth/register",
         "/_auth/auth/verify/$id"
       ]
@@ -490,10 +467,6 @@ export const routeTree = rootRoute
     },
     "/_auth/auth/login": {
       "filePath": "_auth/auth.login.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/auth/not-verify": {
-      "filePath": "_auth/auth.not-verify.tsx",
       "parent": "/_auth"
     },
     "/_auth/auth/register": {

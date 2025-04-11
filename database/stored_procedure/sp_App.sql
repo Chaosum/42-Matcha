@@ -5,14 +5,14 @@ CREATE PROCEDURE GetMatchingProfiles (
     IN max_age_gap INT,
     IN max_distance_gap INT,
     IN fame_gap INT,
+    IN sort_by VARCHAR(50),
     IN ref_fame INT,
     IN ref_birthdate DATE,
     IN ref_gender_id INT,
     IN ref_sexual_orientation_id INT,
     IN ref_coordinates POINT,
     IN result_offset INT,
-    IN result_limit INT,
-    IN sort_by VARCHAR(50)
+    IN result_limit INT
 )
 BEGIN
     SELECT 
@@ -22,6 +22,7 @@ BEGIN
         u.last_name,
         u.birth_date,
         u.address,
+        u.fame,
         GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ",") AS tags,
         ST_Distance_Sphere(ref_coordinates, u.coordinates) AS distance_to_ref,
         (

@@ -24,7 +24,6 @@ const HomeComponent = () => {
 
   // Paramètres par défaut pour l'appel à l'API
   const defaultFilters: FiltersModel = {
-    id: "user-id-123", // Exemple d'ID utilisateur
     range: 50,
     ageGap: 50,
     distanceGap: 600,
@@ -52,7 +51,7 @@ const HomeComponent = () => {
     };
 
     fetchProfiles();
-  });
+  },[]);
 
   if (loading) {
     return <div>Loading...</div>;
