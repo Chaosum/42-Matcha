@@ -1,26 +1,13 @@
-import {
-  createFileRoute,
-  Outlet,
-  ParsedLocation,
-  redirect,
-} from "@tanstack/react-router";
-import {MyRooterContext} from "@/routes/__root.tsx";
-import Navbar, {NavbarAuth} from "@/components/navigation/Navbar.tsx";
-import {Box} from "@chakra-ui/react";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { NavbarAuth } from "@/components/navigation/Navbar.tsx";
+import { Box } from "@chakra-ui/react";
+import { getUserToken } from "@/auth.tsx";
 
 export const Route = createFileRoute("/_auth")({
   component: RouteComponent,
-  beforeLoad: async ({
-                       context,
-                       location,
-                     }: {
-    context: MyRooterContext;
-    location: ParsedLocation;
-  }) => {
-    console.log("Auth layout");
-    console.log("Location: ", location);
-    if (context.auth.isAuthenticated) {
-      console.log("User is authenticated");
+  beforeLoad: async () => {
+    if (getUserToken()) {
+      console.info("User is authenticated");
       throw redirect({
         to: "/home",
       });
@@ -31,9 +18,9 @@ export const Route = createFileRoute("/_auth")({
 function RouteComponent() {
   return (
     <>
-      <NavbarAuth/>
+      <NavbarAuth />
       <Box flexGrow="1" p={5}>
-        <Outlet/>
+        <Outlet />
       </Box>
     </>
   );

@@ -13,7 +13,7 @@ namespace backend.Controllers.User;
 [Route("[controller]")]
 public class UserPictureController(ILogger<UserPictureController> logger) : ControllerBase
 {
-    private readonly string _imagePath = Environment.GetEnvironmentVariable("IMAGE_PATH") ?? "/home/cybattis/Dev/42/Matcha/backend/images/";
+    private readonly string _imagePath = Environment.GetEnvironmentVariable("IMAGE_PATH") ?? "/home/cybattis/Dev/42/Matcha/images/";
 
     /// <summary>
     /// Upload user picture

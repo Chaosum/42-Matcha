@@ -1,41 +1,96 @@
 import {
   Text,
   HStack,
-  Circle,
+  Button,
+  IconButton,
   Float,
-  Button, IconButton,
+  Status,
 } from "@chakra-ui/react";
-import {Avatar} from "@/components/ui/avatar"
-import {useNavigate} from "@tanstack/react-router";
-import {ConversationIcon} from "@/components/Icons.tsx";
-import {MatchListType} from "@/routes/_app/match.tsx";
+import { Avatar } from "@/components/ui/avatar";
+import { useNavigate } from "@tanstack/react-router";
+import { ConversationIcon } from "@/components/Icons.tsx";
+import { Match } from "@/lib/interface.ts";
+import { useEffect, useState } from "react";
+import { DownloadImage } from "@/lib/query.ts";
+import { AxiosError } from "axios";
+import { useTheme } from "next-themes";
 
-export function MatchList({props, setId}: { props: MatchListType; setId: (value: number) => void }) {
+export function MatchList({
+  userData,
+  username,
+  setUsername,
+}: {
+  userData: Match;
+  username: string;
+  setUsername: (value: string) => void;
+}) {
+  const theme = useTheme().theme;
   const navigate = useNavigate();
+  const [image, setImage] = useState<string>("");
+
+  useEffect(() => {
+    DownloadImage(userData.imageUrl)
+      .then((data) => {
+        setImage(data.data);
+      })
+      .catch((error: AxiosError) => {
+        console.error(error);
+      });
+  });
+
+  function backgroundColor() {
+    if (username === userData.username) {
+      if (theme === "dark") {
+        return "gray.700";
+      }
+      if (theme === "light") {
+        return "gray.200";
+      }
+    } else {
+      if (theme === "dark") {
+        return "gray.800";
+      }
+      if (theme === "light") {
+        return "white";
+      }
+    }
+  }
+
   return (
-    <HStack key={props.id} gap="4" w={'250px'} h='fit-content' rounded="md" p={2} borderWidth="1px"
-            borderColor="gray.200">
-      <Button variant={'ghost'}
-              onClick={async () => {
-                await navigate({to: '/profile/' + props.id});
-              }}>
-        <Avatar name={props.name} size="lg" src={props.avatar}>
+    <HStack
+      key={userData.username}
+      gap="4"
+      w={"250px"}
+      h="fit-content"
+      rounded="md"
+      p={2}
+      borderWidth="1px"
+      borderColor="gray.200"
+      bg={backgroundColor()}
+    >
+      <Button
+        variant={"plain"}
+        onClick={async () => {
+          // @ts-expect-error-error
+          await navigate({ to: "/profile/" + userData.username });
+        }}
+      >
+        <Avatar name={userData.name} size="lg" src={image}>
           <Float placement="bottom-end" offsetX="1" offsetY="1">
-            <Circle
-              bg="green.500"
-              size="8px"
-              outline="0.2em solid"
-              outlineColor="bg"
-            />
+            <Status.Root colorPalette={userData.isOnline ? "green" : "red"}>
+              <Status.Indicator />
+            </Status.Root>
           </Float>
         </Avatar>
       </Button>
-      <Text fontWeight="medium">{props.name}</Text>
-      <IconButton variant={'ghost'}
-                  onClick={() => {
-                    setId(props.id);
-                  }}>
-        <ConversationIcon/>
+      <Text fontWeight="medium">{userData.name}</Text>
+      <IconButton
+        variant={"ghost"}
+        onClick={() => {
+          setUsername(userData.username);
+        }}
+      >
+        <ConversationIcon />
       </IconButton>
     </HStack>
   );

@@ -1,4 +1,4 @@
-import {createFileRoute, redirect, useNavigate, useSearch} from '@tanstack/react-router'
+import {createFileRoute, useNavigate} from '@tanstack/react-router'
 import {FileUploadDropzone, FileUploadRoot} from '@/components/ui/file-upload'
 import {AspectRatio, Flex, Grid, Image} from '@chakra-ui/react'
 import {ToasterError, ToasterSuccess} from '@/lib/toaster.ts'
@@ -12,11 +12,10 @@ import {
   UploadToServer,
   ValidateProfile,
 } from '@/lib/query.ts'
-import {UserContext} from "@/routes/_app.tsx";
-import {UserProfile} from "@/lib/interface.ts";
-import {useAuth} from "@/auth.tsx";
+import {UserContext, UserProfile} from '@/lib/interface.ts'
+import {AxiosError} from 'axios'
 
-export const Route = createFileRoute('/_app/profile/edit-images')({
+export const Route = createFileRoute('/_app/me/edit-images')({
   component: RouteComponent,
 })
 
@@ -27,22 +26,22 @@ function UploadImageComponent({
   imageName?: string
   position: number
 }) {
-  const auth = useAuth();
   const [isHovering, setIsHovering] = useState(false)
   const [onDelete, setOnDelete] = useState(false)
   const [image, setImage] = useState<string>('')
 
   useEffect(() => {
-    if (!imageName)
-      return
+    if (!imageName) return
 
-    DownloadImage(imageName).then((res) => {
-      setImage(res.data);
-    }).catch(async (err) => {
-      if (err.status === 401) await auth.logout();
-      ToasterError('An error occured');
+    DownloadImage(imageName)
+    .then((res) => {
+      setImage(res.data)
     })
-  }, [imageName]);
+    .catch((err: AxiosError) => {
+      console.error(err)
+      ToasterError('An error occured')
+    })
+  }, [imageName])
 
   return (
     <FileUploadRoot
@@ -53,18 +52,19 @@ function UploadImageComponent({
       accept={['image/png', 'image/jpeg']}
       maxFileSize={5000000}
       onFileAccept={async (file) => {
-        if (!file.files[0]) return;
+        if (!file.files[0]) return
 
         // upload file
-        const result = await UploadToServer(file.files[0], position);
-        if (!result) return;
+        const result = await UploadToServer(file.files[0], position)
+        if (!result) return
 
-        await DownloadImage(result).then((res) => {
-          setImage(res.data);
-        }).catch(async (error) => {
-          if (error.status === 401) await auth.logout();
-          console.error(error);
-        });
+        await DownloadImage(result)
+        .then((res) => {
+          setImage(res.data)
+        })
+        .catch(async (error) => {
+          console.error(error)
+        })
       }}
       onFileReject={(files) => {
         if (!files.files[0]) {
@@ -108,9 +108,9 @@ function UploadImageComponent({
                       setImage('')
                       ToasterSuccess('Image deleted successfully')
                     })
-                    .catch(async (err) => {
-                      if (err.status === 401) await auth.logout();
-                      ToasterError('An error occured');
+                    .catch(async (err: AxiosError) => {
+                      console.error(err)
+                      ToasterError('An error occured')
                     })
                   }}
                 >
@@ -133,9 +133,11 @@ function UploadImageComponent({
 }
 
 function RouteComponent() {
-  const navigate = useNavigate({from: Route.fullPath});
-  const {fromProfile} = Route.useSearch();
-  const profile = useContext(UserContext)?.profileData as UserProfile;
+  const navigate = useNavigate({from: Route.fullPath})
+  const {fromProfile} = Route.useSearch() as {
+    fromProfile: boolean
+  }
+  const profile = useContext(UserContext)?.profileData as UserProfile
 
   return (
     <Grid gap="4" p="4">
@@ -154,9 +156,9 @@ function RouteComponent() {
           if (result) {
             if (fromProfile) {
               await navigate({
-                to: '/profile/me',
+                to: '/me/profile',
               })
-              return;
+              return
             } else {
               await navigate({
                 to: '/home',

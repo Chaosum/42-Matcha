@@ -1,8 +1,6 @@
 using System.Text;
-using System.Text.Json;
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -62,14 +60,15 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero // Optional: Set to zero to remove delay of token expiration
     };
 });
 builder.Services.AddAuthorization();
 
 // Add services.
-builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
-
+builder.Services.AddSingleton<ISseService, SseService>();
+builder.Services.AddSingleton<IWebSocketService, ChatService>();
 
 var app = builder.Build();
 
@@ -77,11 +76,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors(x => x.AllowAnyOrigin()
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-    );
 }
+
+app.UseCors(x => 
+    x.AllowAnyOrigin()
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+);
 
 var webSocketOptions = new WebSocketOptions
 {
@@ -90,7 +91,6 @@ var webSocketOptions = new WebSocketOptions
 app.UseWebSockets(webSocketOptions);
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

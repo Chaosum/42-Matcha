@@ -18,7 +18,7 @@ public class LoginController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult Login([FromBody] LoginModel newLogin)
+    public async Task<ActionResult> Login([FromBody] LoginModel newLogin)
     {
         try
         {
@@ -32,12 +32,12 @@ public class LoginController : ControllerBase
                 });
             }
 
-            using MySqlConnection dbClient = DbHelper.GetOpenConnection();
-            using MySqlCommand cmd = new MySqlCommand("GetUserPasswordByUsername", dbClient);
+            await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+            await using MySqlCommand cmd = new MySqlCommand("GetUserPasswordByUsername", dbClient);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("inputUsername", newLogin.UserName);
 
-            using MySqlDataReader reader = cmd.ExecuteReader();
+            await using MySqlDataReader reader = cmd.ExecuteReader();
             if (!reader.Read())
             {
                 return Unauthorized(new

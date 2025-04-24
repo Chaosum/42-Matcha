@@ -93,7 +93,7 @@ public static class Checks {
         try
         {
             using MySqlConnection dbClient = DbHelper.GetOpenConnection();
-            using MySqlCommand cmd = new MySqlCommand("CheckUserNameTaken", dbClient);
+            using MySqlCommand cmd = new MySqlCommand("CheckUsernameTaken", dbClient);
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@userName", userName);
 
@@ -146,12 +146,12 @@ public static class Checks {
         if (parts.Length != 2)
             return false;
 
-        if (!IsDecimal(parts[0]) || !IsDecimal(parts[1]))
-            return false;
-
         var latitude = decimal.Parse(parts[0]);
         var longitude = decimal.Parse(parts[1]);
-
+        
+        // Console.WriteLine($"Latitude: {latitude}, Longitude: {longitude}");
+        // Console.WriteLine($"Latitude valid: {latitude is >= -90 and <= 90}, Longitude valid: {longitude is >= -180 and <= 180}");
+        
         return latitude is >= -90 and <= 90 && longitude is >= -180 and <= 180;
     }
     

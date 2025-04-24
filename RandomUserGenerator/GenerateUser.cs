@@ -10,7 +10,7 @@ public static class GenerateUser
     public static async Task Generate(MySqlConnection connection, string gender, int number, string imagesPath)
     {
         var client = new HttpClient();
-        var response = await client.GetAsync($"https://randomuser.me/api/?results={number}&gender={gender}&password=special,upper,lower,number&exc=cell,phone,id&noinfo");
+        var response = await client.GetAsync($"https://randomuser.me/api/?nat=fr&results={number}&gender={gender}&password=special,upper,lower,number&exc=cell,phone,id&noinfo");
         var content = await response.Content.ReadAsStringAsync();
         var users = JsonSerializer.Deserialize<RandomUserResponse>(content) ?? new RandomUserResponse();
 
@@ -38,7 +38,7 @@ public static class GenerateUser
                 cmd.Parameters.AddWithValue("@lastName", user.Name.Last);
                 cmd.Parameters.AddWithValue("@genderID", user.Gender == "male" ? 1 : 2);
                 cmd.Parameters.AddWithValue("@sexualOrientation", random.WeightedRandom([1, 2, 3], [0.5f, 0.25f, 0.25f]));
-                cmd.Parameters.AddWithValue("@_coordinates", user.Location.Coordinates.Latitude + "," + user.Location.Coordinates.Longitude);
+                cmd.Parameters.AddWithValue("@_coordinates", user.Location.Coordinates.Longitude + "," + user.Location.Coordinates.Latitude);
                 cmd.Parameters.AddWithValue("@_address", user.Location.Street.Number + ", " + user.Location.Street.Name + ", " 
                                                         + user.Location.City + ", " 
                                                         + user.Location.Country);
@@ -87,10 +87,10 @@ public static class GenerateUser
                     
                     // Save image to disk
                     var image = await client.GetByteArrayAsync(imageUrl);
-                    var url = imagesPath + Guid.NewGuid() + ".jpg";
+                    var url = Guid.NewGuid() + ".jpg";
                     try {
                         // Console.WriteLine($"Saving image {i+1} to disk at {url}");
-                        await File.WriteAllBytesAsync(url, image);
+                        await File.WriteAllBytesAsync(imagesPath + url, image);
                         cmd.Parameters.AddWithValue("@image"+ (i + 1), url);
                     } catch (Exception e) {
                         Console.WriteLine(e.Message);

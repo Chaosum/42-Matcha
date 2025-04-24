@@ -4,54 +4,47 @@ import {
   ParsedLocation,
   redirect,
 } from "@tanstack/react-router";
-import {MyRooterContext} from "@/routes/__root.tsx";
 import Navbar from "@/components/navigation/Navbar.tsx";
-import {Box} from "@chakra-ui/react";
-import {GetMeProfile} from "@/lib/query.ts";
-import {ProfileStatus, UserProfile} from "@/lib/interface.ts";
-import {createContext, useState} from "react";
-import {ToasterError} from "@/lib/toaster.ts";
+import { Box } from "@chakra-ui/react";
+import { GetMeProfile } from "@/lib/query.ts";
+import { ProfileStatus, UserContext, UserProfile } from "@/lib/interface.ts";
+import { useState } from "react";
+import { getUserToken } from "@/auth.tsx";
 
 export const Route = createFileRoute("/_app")({
   component: RouteComponent,
-  beforeLoad: async ({context}: { context: MyRooterContext }) => {
-    if (!context.auth.isAuthenticated) {
-      ToasterError("Erreur", "Vous n'êtes pas connecté");
+  beforeLoad: async () => {
+    if (!getUserToken()) {
       throw redirect({
         to: "/auth/login",
       });
     }
   },
-  loader: async ({
-                   context,
-                   location,
-                 }: {
-    context: MyRooterContext;
-    location: ParsedLocation;
-  }) => {
-    const profile = await GetMeProfile(context.auth);
+  loader: async ({ location }: { location: ParsedLocation }) => {
+    const profile = await GetMeProfile();
     if (!profile) return;
 
     const search = new URLSearchParams(location.search);
+    console.log(profile.status);
 
     if (
       profile.status === ProfileStatus.INFO &&
-      location.pathname !== "/profile/edit-info"
+      location.pathname !== "/me/edit-info"
     ) {
       throw redirect({
-        to: "/profile/edit-info",
+        to: "/me/edit-info",
       });
     } else if (
       profile.status === ProfileStatus.IMAGES &&
-      location.pathname !== "/profile/edit-images"
+      location.pathname !== "/me/edit-images"
     ) {
       throw redirect({
-        to: "/profile/edit-images",
+        to: "/me/edit-images",
       });
     } else if (
       profile.status === ProfileStatus.COMPLETED &&
       !search.get("fromProfile") &&
-      location.pathname === "/profile/edit-images"
+      location.pathname === "/me/edit-images"
     ) {
       throw redirect({
         to: "/home",
@@ -62,22 +55,15 @@ export const Route = createFileRoute("/_app")({
   },
 });
 
-export interface IUserContext {
-  profileData: UserProfile;
-  setProfileData: (user: UserProfile) => void;
-}
-
-export const UserContext = createContext<IUserContext | null>(null);
-
 function RouteComponent() {
   const data = Route.useLoaderData() as UserProfile;
   const [profileData, setProfileData] = useState<UserProfile>(data);
 
   return (
-    <UserContext.Provider value={{profileData, setProfileData}}>
-      <Navbar/>
+    <UserContext.Provider value={{ profileData, setProfileData }}>
+      <Navbar />
       <Box flexGrow="1" p={5}>
-        <Outlet/>
+        <Outlet />
       </Box>
     </UserContext.Provider>
   );

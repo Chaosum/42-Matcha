@@ -4,11 +4,11 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { MyRooterContext } from "./__root";
+import { getUserToken } from "@/auth.tsx";
 
 export const Route = createFileRoute("/")({
   component: Index,
   beforeLoad: async ({
-    context,
     location,
   }: {
     context: MyRooterContext;
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
   }) => {
     console.log("Index layout");
     console.log("Location: ", location);
-    if (!context.auth.isAuthenticated) {
+    if (!getUserToken()) {
       console.log("User is not authenticated");
       throw redirect({
         to: "/auth/login",

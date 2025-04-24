@@ -24,6 +24,8 @@ export function useCoordinate(): UserCoordinates {
   function success(pos: GeolocationPosition) {
     if (!pos.coords) return;
 
+    console.log(pos.coords);
+
     const crd: UserCoordinates = {
       access: true,
       latitude: pos.coords.latitude,

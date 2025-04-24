@@ -99,4 +99,45 @@ public class TagsController(ILogger<TagsController> logger): ControllerBase
             return Problem(detail: e.Message);
         }
     }
+
+    /// <summary>
+    /// Update user tag
+    /// </summary>
+    /// <param name="tag">tag</param>
+    /// <param name="authorization"></param>
+    /// <response code="200">Tag updated</response>
+    /// <response code="400">Bad request</response>
+    [HttpPost]
+    [Route("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> AddToList([FromForm] string tag, [FromHeader] string authorization)
+    {
+        try {
+            var tagId = 0;
+            Console.WriteLine(tag);
+
+            await using MySqlConnection conn = DbHelper.GetOpenConnection();
+            await using MySqlCommand cmd = new("AddTag", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@tagName", tag);
+            
+            // output parameters
+            cmd.Parameters.Add("tagId", MySqlDbType.Int32);
+            cmd.Parameters["tagId"].Direction = ParameterDirection.Output;
+            
+            var result = await cmd.ExecuteNonQueryAsync();
+            if (result == 0)
+                return BadRequest("Tag already exists");
+            
+            tagId = cmd.Parameters["tagId"].Value as int? ?? 0;
+            
+            return Ok(tagId);
+        }
+        catch (MySqlException e) {
+            logger.LogError(e.Message);
+            return Problem(detail: e.Message);
+        }
+    }
 }

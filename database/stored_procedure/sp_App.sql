@@ -5,14 +5,14 @@ CREATE PROCEDURE GetMatchingProfiles (
     IN max_age_gap INT,
     IN max_distance_gap INT,
     IN fame_gap INT,
+    IN sort_by VARCHAR(50),
     IN ref_fame INT,
     IN ref_birthdate DATE,
     IN ref_gender_id INT,
     IN ref_sexual_orientation_id INT,
-    IN ref_coordinates POINT,
+    IN ref_coordinates_str VARCHAR(100),
     IN result_offset INT,
-    IN result_limit INT,
-    IN sort_by VARCHAR(50)
+    IN result_limit INT
 )
 BEGIN
     SELECT 
@@ -22,11 +22,13 @@ BEGIN
         u.last_name,
         u.birth_date,
         u.address,
+        u.fame,
+        g.name AS gender,
         GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ",") AS tags,
-        ST_Distance_Sphere(ref_coordinates, u.coordinates) AS distance_to_ref,
+        ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates)/1000 AS distance_to_ref,
         (
             u.fame 
-            - ((ST_Distance_Sphere(ref_coordinates, u.coordinates) / 1000) * 10) 
+            - ((ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates) / 1000) * 10) 
             + (50 * (
                 SELECT COUNT(*) 
                 FROM users_tags ut2 
@@ -55,6 +57,7 @@ BEGIN
     JOIN pictures AS p ON p.user_id = u.id
     JOIN users_tags AS ut ON ut.user_id = u.id
     JOIN tags t ON t.id = ut.tag_id
+    JOIN gender g ON g.id = u.gender_id
     LEFT JOIN blocked b 
         ON (b.from_userid = ref_user_id AND b.to_userid = u.id)
         OR (b.from_userid = u.id AND b.to_userid = ref_user_id)
@@ -62,19 +65,19 @@ BEGIN
     AND b.from_userid IS NULL  -- Exclut les utilisateurs bloqués dans les deux sens
     AND p.position = 1
     AND ABS(ref_fame - u.fame) <= fame_gap
-    AND distance_to_ref <= max_distance_gap
+    AND ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates)/1000 <= max_distance_gap
     AND ABS(TIMESTAMPDIFF(YEAR, u.birth_date, ref_birthdate)) <= max_age_gap
     AND (
         -- Hétéro → cherche le genre opposé, orientation hétéro ou bi
-        (ref_sexual_orientation_id = 1 AND u.gender_id != ref_gender_id AND (u.sexual_orientation_id = 1 OR u.sexual_orientation_id = 3))
+        (ref_sexual_orientation_id = 1 AND u.gender_id != ref_gender_id AND (u.sexual_orientation = 1 OR u.sexual_orientation = 3))
 
         -- Gay → cherche le même genre, orientation gay ou bi
-        OR (ref_sexual_orientation_id = 2 AND u.gender_id = ref_gender_id AND (u.sexual_orientation_id = 2 OR u.sexual_orientation_id = 3))
+        OR (ref_sexual_orientation_id = 2 AND u.gender_id = ref_gender_id AND (u.sexual_orientation = 2 OR u.sexual_orientation = 3))
 
         -- Bi → accepte tout sauf les hétéros du même genre
-        OR (ref_sexual_orientation_id = 3 AND NOT (u.gender_id = ref_gender_id AND u.sexual_orientation_id = 1))
+        OR (ref_sexual_orientation_id = 3 AND NOT (u.gender_id = ref_gender_id AND u.sexual_orientation = 1))
     )
-    GROUP BY u.id, u.username, u.first_name, u.birth_date, u.address, distance_to_ref, common_tags
+    GROUP BY u.id, u.username, u.first_name, u.birth_date, u.address, distance_to_ref, common_tags, p.image_url, g.name
     ORDER BY 
         CASE 
             WHEN sort_by = 'birth_date' THEN u.birth_date

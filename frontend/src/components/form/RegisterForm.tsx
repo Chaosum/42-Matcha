@@ -2,10 +2,10 @@ import { Button, Input, Stack, Text, VStack } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 import { UseFormReturn } from "react-hook-form";
-import { RegisterFormValues } from "@/routes/auth/register.tsx";
 import { Link } from "@tanstack/react-router";
 import { RiArrowRightLine } from "react-icons/ri";
 import { FormEventHandler } from "react";
+import { RegisterFormValues } from "@/routes/_auth/auth.register.tsx";
 
 export function RegisterForm(props: {
   form: UseFormReturn<RegisterFormValues>;

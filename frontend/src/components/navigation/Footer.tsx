@@ -1,8 +1,8 @@
-import { Button, Stack, Text, VisuallyHidden } from "@chakra-ui/react";
+import { Stack, Text, VisuallyHidden } from "@chakra-ui/react";
 import { FaGithub } from "react-icons/fa";
 import { ReactNode } from "react";
 import { useColorModeValue } from "@/components/ui/color-mode.tsx";
-import { Link } from "@tanstack/react-router";
+import { LinkButton } from "@/components/ui/link-button.tsx";
 
 const SocialButton = ({
   children,
@@ -14,7 +14,7 @@ const SocialButton = ({
   href: string;
 }) => {
   return (
-    <Button
+    <LinkButton
       bg={useColorModeValue("blackAlpha.100", "whiteAlpha.100")}
       rounded={"full"}
       w={8}
@@ -27,12 +27,11 @@ const SocialButton = ({
       _hover={{
         bg: useColorModeValue("blackAlpha.200", "whiteAlpha.200"),
       }}
+      href={href}
     >
-      <Link to={href}>
-        <VisuallyHidden>{label}</VisuallyHidden>
-        {children}
-      </Link>
-    </Button>
+      <VisuallyHidden>{label}</VisuallyHidden>
+      {children}
+    </LinkButton>
   );
 };
 
