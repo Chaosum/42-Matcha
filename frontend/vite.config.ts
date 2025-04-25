@@ -6,9 +6,6 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths(), TanStackRouterVite()],
-  server: {
-      port: 3000,
-    },
 	preview: {
 	  port: 3000,
 	},

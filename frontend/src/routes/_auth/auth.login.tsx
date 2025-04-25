@@ -1,11 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Button, Card, Flex, Stack, Text } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import { LoginForm } from "@/components/form/LoginForm.tsx";
-import { toaster } from "@/components/ui/toaster.tsx";
-import { ToasterError, ToasterLoading, ToasterSuccess } from "@/lib/toaster.ts";
-import { RiArrowRightLine } from "react-icons/ri";
-import { setUserToken } from "@/auth.tsx";
+import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
+import {Button, Card, Flex, Stack, Text} from "@chakra-ui/react";
+import {useForm} from "react-hook-form";
+import {LoginForm} from "@/components/form/LoginForm.tsx";
+import {toaster} from "@/components/ui/toaster.tsx";
+import {ToasterError, ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
+import {RiArrowRightLine} from "react-icons/ri";
+import {setUserToken} from "@/auth.tsx";
 
 export const Route = createFileRoute("/_auth/auth/login")({
   component: RouteComponent,
@@ -35,7 +35,7 @@ async function TryLogin(data: LoginFormValues): Promise<LoginResponse> {
     return response.json();
   } catch (e) {
     console.error(e);
-    return { error: "Erreur", message: "Erreur serveur" };
+    return {error: "Erreur", message: "Erreur serveur"};
   }
 }
 
@@ -68,19 +68,24 @@ function RouteComponent() {
       direction="column"
       gap={2}
     >
-      <Card.Root maxW="lg" minWidth={{ base: "sm" }}>
+      <Card.Root maxW="lg" minWidth={{base: "sm"}}>
         <Card.Header alignItems="center">
           <Card.Title>Sign in</Card.Title>
         </Card.Header>
         <Card.Body justifyContent="center">
-          <LoginForm form={form} onSubmit={onSubmit} />
+          <LoginForm form={form} onSubmit={onSubmit}/>
         </Card.Body>
         <Card.Footer justifyContent="center">
           <Stack direction="column" align="center">
             <Text>You do not have an account ? </Text>
             <Link to={"/auth/register"} className={"chakra-button"}>
               <Button size="xs" variant="subtle">
-                Register <RiArrowRightLine />
+                Register <RiArrowRightLine/>
+              </Button>
+            </Link>
+            <Link to={"/auth/forgottenpassword"} className={"chakra-button"}>
+              <Button size="xs" variant="subtle">
+                Forgot password ?
               </Button>
             </Link>
           </Stack>

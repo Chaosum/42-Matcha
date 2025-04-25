@@ -6,7 +6,8 @@ using RandomUserGenerator;
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
     ?? "Server=localhost;Port=3307;Database=db;user=root;password=root-pass;";
 
-var imagesPath = Environment.GetEnvironmentVariable("IMAGE_PATH") ?? "/home/cybattis/Dev/42/Matcha/images/";
+var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "../images/");
+Console.WriteLine($"Images will be saved to: {imagesPath}");
 
 // Ask for number of male and female users to generate
 Console.WriteLine("Welcome to Random User Generator!");

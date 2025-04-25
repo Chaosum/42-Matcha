@@ -31,7 +31,6 @@
   frontend:
     build:
       context: frontend
-      dockerfile: dev.Dockerfile
     restart: always
     networks:
       - front-net

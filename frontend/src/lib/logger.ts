@@ -45,4 +45,4 @@ export class ConsoleLogger implements Logger {
   }
 }
 
-export const logger = new ConsoleLogger({ level: "warn" });
+export const logger = new ConsoleLogger({ level: "log" });

@@ -13,7 +13,7 @@ namespace backend.Controllers.User;
 [Route("[controller]")]
 public class UserPictureController(ILogger<UserPictureController> logger) : ControllerBase
 {
-    private readonly string _imagePath = "/app/images/";
+    private readonly string _imagePath = Environment.GetEnvironmentVariable("IMAGE_PATH_API") ?? "";
 
     /// <summary>
     /// Upload user picture
@@ -29,6 +29,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> Upload([FromForm] UserPictureModel image, [FromHeader] string authorization)
     {
+        Console.WriteLine("Image Path: "+ _imagePath);
         try {
             var token = JwtHelper.DecodeJwtToken(authorization);
             if (image.Position < 1 || image.Position > 5)

@@ -34,9 +34,13 @@ const formSchema = z.object({
   }),
   gender: z.number(),
   sexualOrientation: z.number(),
-  biography: z.string(),
+  biography: z.string().nonempty({
+    message: "Biography is required",
+  }),
   coordinates: z.string(),
-  address: z.string(),
+  address: z.string().nonempty({
+    message: "Address is required",
+  }),
   tags: z
   .array(z.number())
   .min(1, {
