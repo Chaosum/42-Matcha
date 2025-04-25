@@ -145,12 +145,12 @@ public static class Checks {
         var parts = str.Split(',');
         if (parts.Length != 2)
             return false;
-
+        
+        Console.WriteLine("parts[0] : " + parts[0]);
+        Console.WriteLine("parts[1] : " + parts[1]);
+        
         var latitude = decimal.Parse(parts[0]);
         var longitude = decimal.Parse(parts[1]);
-        
-        // Console.WriteLine($"Latitude: {latitude}, Longitude: {longitude}");
-        // Console.WriteLine($"Latitude valid: {latitude is >= -90 and <= 90}, Longitude valid: {longitude is >= -180 and <= 180}");
         
         return latitude is >= -90 and <= 90 && longitude is >= -180 and <= 180;
     }

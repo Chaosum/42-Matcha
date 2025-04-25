@@ -1,7 +1,8 @@
 using System.Data;
 using System.Security.Cryptography;
-using System.Text.Json;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace RandomUserGenerator;
 
@@ -38,7 +39,10 @@ public static class GenerateUser
                 cmd.Parameters.AddWithValue("@lastName", user.Name.Last);
                 cmd.Parameters.AddWithValue("@genderID", user.Gender == "male" ? 1 : 2);
                 cmd.Parameters.AddWithValue("@sexualOrientation", random.WeightedRandom([1, 2, 3], [0.5f, 0.25f, 0.25f]));
-                cmd.Parameters.AddWithValue("@_coordinates", user.Location.Coordinates.Longitude + "," + user.Location.Coordinates.Latitude);
+                var address = user.Location.Street.Name + ", " + user.Location.City + ", " + user.Location.Country;
+                var coordinates = await GetCoordinates(address);
+                Console.WriteLine("Coordinates: " + coordinates);
+                cmd.Parameters.AddWithValue("@_coordinates", coordinates);
                 cmd.Parameters.AddWithValue("@_address", user.Location.Street.Number + ", " + user.Location.Street.Name + ", " 
                                                         + user.Location.City + ", " 
                                                         + user.Location.Country);
@@ -112,5 +116,26 @@ public static class GenerateUser
                 Console.WriteLine(e.Message);
             }
         }
+    }
+    
+    private static async Task<string> GetCoordinates(string address)
+    {
+        var parsedAddress = address.Replace(' ', '+');
+        
+        HttpClient client = new HttpClient();
+        var response = await client.GetAsync($"https://api-adresse.data.gouv.fr/search/?q={parsedAddress}");
+        var content = await response.Content.ReadAsStringAsync();
+        var jsonResponse = JsonConvert.DeserializeObject<Geocode>(content);
+        if (jsonResponse != null && jsonResponse.features != null && jsonResponse.features.Count > 0)
+        {
+            var coordinates = jsonResponse.features[0].geometry?.coordinates;
+            if (coordinates != null && coordinates.Count == 2) {
+                var longitude = Math.Abs(coordinates[0]).ToString().Replace(',', '.');
+                var latitude = Math.Abs(coordinates[1]).ToString().Replace(',', '.');
+                return longitude + "," + latitude;
+            }
+        }
+        Console.WriteLine($"Failed to get coordinates for address: {address}");
+        return string.Empty;
     }
 }

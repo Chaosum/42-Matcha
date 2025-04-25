@@ -1,6 +1,6 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
 WORKDIR /app
+RUN mkdir -p /app/images
 EXPOSE 8080
 EXPOSE 8081
 

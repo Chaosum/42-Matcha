@@ -4,9 +4,7 @@ namespace backend.Database;
 
 public static class DbHelper
 {
-    private static readonly string ConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
-                                                      "Server=db;Port=3307;Database=db;user=user;password=password;";
-
+    private static readonly string ConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? "";
 
     public static MySqlConnection GetConnection() => new(ConnectionString);
     

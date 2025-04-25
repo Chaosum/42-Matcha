@@ -1,11 +1,12 @@
 ﻿using System.Data;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using RandomUserGenerator;
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-    ?? "Server=localhost;Port=3307;Database=db;user=root;password=password;";
+    ?? "Server=localhost;Port=3307;Database=db;user=root;password=root-pass;";
 
-var imagesPath = Environment.GetEnvironmentVariable("IMAGE_PATH") ?? "/home/mservage/Documents/42matcha/pictures";
+var imagesPath = Environment.GetEnvironmentVariable("IMAGE_PATH") ?? "/home/cybattis/Dev/42/Matcha/images/";
 
 // Ask for number of male and female users to generate
 Console.WriteLine("Welcome to Random User Generator!");

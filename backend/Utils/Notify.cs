@@ -6,10 +6,10 @@ public static class Notify {
 
     private static (string smtpHost, int smtpPort, string smtpUser, string smtpPass) SetupSmpt()
     {
-        string smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com";
-        int smtpPort    = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
-        string smtpUser = Environment.GetEnvironmentVariable("NO_REPLY_MAIL") ?? "noreply.matchaproject@gmail.com"; // Votre adresse Gmail
-        string smtpPass = Environment.GetEnvironmentVariable("NO_REPLY_MAIL_PASSWORD") ?? "lhxz fazt oapt rrit"; // Mot de passe d'application Gmail
+        string smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "";
+        int smtpPort    = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "");
+        string smtpUser = Environment.GetEnvironmentVariable("NO_REPLY_MAIL") ?? ""; // Votre adresse Gmail
+        string smtpPass = Environment.GetEnvironmentVariable("NO_REPLY_MAIL_PASSWORD") ?? ""; // Mot de passe d'application Gmail
         return (smtpHost, smtpPort, smtpUser, smtpPass);
     }
     

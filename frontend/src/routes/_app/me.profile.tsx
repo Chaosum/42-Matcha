@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { GetMeProfile } from "@/lib/query.ts";
-import { UserProfile } from "@/lib/interface.ts";
-import { Profile } from "@/components/pages/Profile.tsx";
+import {createFileRoute, useLoaderData} from "@tanstack/react-router";
+import {GetMeProfile} from "@/lib/query.ts";
+import {UserProfile} from "@/lib/interface.ts";
+import {Profile} from "@/components/pages/Profile.tsx";
 
 export const Route = createFileRoute("/_app/me/profile")({
   component: RouteComponent,
@@ -9,6 +9,6 @@ export const Route = createFileRoute("/_app/me/profile")({
 });
 
 function RouteComponent() {
-  const data = Route.useLoaderData() as UserProfile;
-  return <Profile data={data} isMe={true} />;
+  const data = useLoaderData(Route.id) as UserProfile;
+  return <Profile data={data} isMe={true}/>;
 }

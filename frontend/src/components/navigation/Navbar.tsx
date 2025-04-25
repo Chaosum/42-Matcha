@@ -33,6 +33,7 @@ import {
 import { useEffect, useState } from "react";
 import { Notification, WsMessage } from "@/lib/websocket.ts";
 import useWebSocket from "react-use-websocket";
+import { logger } from "@/lib/logger.ts";
 
 function AppLogo() {
   return (
@@ -90,13 +91,13 @@ export default function Navbar() {
     },
     shouldReconnect: () => true,
     onOpen: () => {
-      console.log("opened");
+      logger.log("opened");
     },
     onClose: () => {
-      console.log("closed");
+      logger.log("closed");
     },
     onMessage: (event) => {
-      console.log("OnMessage: ", event);
+      logger.log("OnMessage: ", event);
       if (!event.data) return;
       if (event.data === "pong") return;
 
@@ -117,7 +118,7 @@ export default function Navbar() {
   });
 
   useEffect(() => {
-    console.log(notifications);
+    logger.log(notifications);
   }, [notifications]);
 
   return (
@@ -227,7 +228,6 @@ const NavbarMenu = () => {
         <MenuItem
           value="Profile"
           onClick={async () => {
-            console.log("Navigate to profile");
             await navigate({ to: "/me/profile" });
           }}
         >

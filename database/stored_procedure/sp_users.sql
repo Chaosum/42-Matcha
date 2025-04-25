@@ -26,22 +26,14 @@ BEGIN
 
     SET isLiked = 0;
     
-    SELECT first_user_like_status 
-        INTO @first FROM liked 
-        WHERE first_userid = userID AND second_userid = @otherUserID;
-
-    SELECT second_user_like_status 
-        INTO @second FROM liked
-        WHERE first_userid = @otherUserID AND second_userid = userID;
-    
-    SELECT @first, @second;
-    
-    IF @first IS NOT NULL THEN
-        SET isLiked = @first;
-    END IF;
-    
-    IF @second IS NOT NULL THEN
-        SET isLiked = @second;
+    IF userID < @otherUserID THEN
+        SELECT first_user_like_status 
+            INTO isLiked FROM liked 
+            WHERE first_userid = userID AND second_userid = @otherUserID;
+    ELSE
+        SELECT second_user_like_status 
+            INTO isLiked FROM liked 
+            WHERE first_userid = @otherUserID AND second_userid = userID;
     END IF;
     
     SELECT is_blocked INTO isBlocked FROM blocked 
@@ -292,22 +284,22 @@ END //
 # Upload image
 CREATE PROCEDURE UploadImage(
     IN userID INT,
-    IN position INT,
+    IN _position INT,
     IN imageUrl TEXT
 )
 BEGIN
-    IF position < 1 OR position > 5 THEN
+    IF _position < 1 OR _position > 5 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Position must be between 1 and 5';
     END IF;
     
-    SELECT COUNT(@count) FROM pictures WHERE user_id = userID AND pictures.position = position;
+    SELECT COUNT(@count) FROM pictures WHERE user_id = userID AND pictures.position = _position;
     
     IF @count > 0 THEN
-        UPDATE pictures SET image_url = imageUrl WHERE user_id = userID AND pictures.position = position;
+        UPDATE pictures SET image_url = imageUrl WHERE user_id = userID AND pictures.position = _position;
     ELSE
         INSERT INTO pictures (user_id, pictures.position, image_url)
-            VALUES (userID, position, imageUrl);
+            VALUES (userID, _position, imageUrl);
     END IF;
     
     CALL UpdateProfileCompletionPercentage(userID);
@@ -354,12 +346,12 @@ END //
 # Get user Images
 CREATE PROCEDURE GetUserImage(
     IN userID INT,
-    IN position INT
+    IN _position INT
 )
 BEGIN
     SELECT image_url
     FROM pictures
-    WHERE user_id = userID AND pictures.position = position;
+    WHERE user_id = userID AND pictures.position = _position;
 END //
 
 # Insert generated user
@@ -466,7 +458,8 @@ CREATE PROCEDURE LikeUser(
     IN likedUser VARCHAR(50),
     IN isLike BOOLEAN,
     OUT matchStatus INT,
-    OUT oldMatchStatus INT
+    OUT oldMatchStatus INT,
+    OUT isBlocked INT
 )
 BEGIN
     SET matchStatus = 0;
@@ -480,9 +473,15 @@ BEGIN
             WHERE (first_userid = userID AND second_userid = @likedUserId) OR 
                   (first_userid = @likedUserId AND second_userid = userID);
     
+    SELECT is_blocked INTO isBlocked FROM blocked 
+        WHERE from_userid = @likedUserId AND to_userid = userID;
+    
     IF @count = 0 THEN
         INSERT INTO liked (first_userid, second_userid, first_user_like_status)
             VALUES (userID, @likedUserId, isLike);
+
+        UPDATE users SET fame = fame + 1
+            WHERE id = userID;
     ELSE
         UPDATE liked SET first_user_like_status = isLike
             WHERE (first_userid = userID AND second_userid = @likedUserId);
@@ -496,7 +495,13 @@ BEGIN
             IF @first = 1 AND @second = 1 THEN
                 SET matchStatus = 1;
             END IF;
-        END IF;
+
+            UPDATE users SET fame = fame + 1
+                WHERE id = @likedUserId;
+        ELSE
+            UPDATE users SET fame = fame - 1
+            WHERE id = @likedUserId;
+        END IF;  
     END IF;
 END //
 

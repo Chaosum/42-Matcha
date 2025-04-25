@@ -26,6 +26,12 @@ import { ToasterSuccess } from "@/lib/toaster.ts";
 export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
+  const sexualOrientation =
+    data.sexualOrientation === 1
+      ? "Heterosexual"
+      : data.sexualOrientation === 2
+        ? "Homosexual"
+        : "Bisexual";
 
   return (
     <Flex
@@ -76,10 +82,12 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
             <Text>{data.address}</Text>
             <Flex gap={6} alignItems="center">
               <Text>{age} ans</Text>
-              <Badge size="md" variant="surface">
-                Fame {data.fameRating}
-              </Badge>
+              <Text>{data.gender === 1 ? "Male" : "Female"}</Text>
+              <Text>{sexualOrientation}</Text>
             </Flex>
+            <Badge size="md" variant="surface" maxW={"fit-content"}>
+              Fame {data.fameRating}
+            </Badge>
             {!isMe && (
               <Flex gap={2} alignItems="center">
                 <Status.Root colorPalette={data.isOnline ? "green" : "red"}>
@@ -164,29 +172,36 @@ function UserAction({ data }: { data: UserProfile }) {
   const [isMatch, setIsMatch] = useState(data.isMatched);
 
   useEffect(() => {
-    // Checked match
     if (!isLike && isMatch) {
       setIsMatch(false);
     }
-  }, [isLike]);
 
-  useEffect(() => {
-    // Checked match
-  }, [isMatch]);
+    if (isLike && isBlock) {
+      LikeUser(data.username, false).then(() => {
+        setIsLike(false);
+        setIsMatch(false);
+      });
+    }
+  }, [isLike, isBlock, isMatch]);
 
   return (
     <HStack gap={6} alignItems="center">
-      <IconButton
-        variant="ghost"
-        onClick={async () => {
-          if (await LikeUser(data.username, !isLike)) {
-            ToasterSuccess(!isLike ? "User liked" : "User unliked");
+      {!isBlock && (
+        <IconButton
+          variant="ghost"
+          onClick={async () => {
+            const result = await LikeUser(data.username, !isLike);
+            if (!result) return;
+            if (!isMatch && result.matchStatus) {
+              ToasterSuccess("It's a match!");
+              setIsMatch(true);
+            }
             setIsLike(!isLike);
-          }
-        }}
-      >
-        <LikeIcon checked={isLike} />
-      </IconButton>
+          }}
+        >
+          <LikeIcon checked={isLike} />
+        </IconButton>
+      )}
       {isMatch && (
         <IconButton
           variant="ghost"

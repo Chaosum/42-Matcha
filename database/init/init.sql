@@ -181,7 +181,7 @@ BEGIN
             SELECT users.first_name, users.last_name INTO @firstName, @lastName  FROM users WHERE id = NEW.first_userid;
             SET @nameFirstUser = CONCAT(@firstName, ' ', @lastName);
             INSERT INTO notification (userid, content)
-            VALUES (NEW.second_userid, CONCAT(@nameFirstUser, ' liked you!'));
+                VALUES (NEW.second_userid, CONCAT(@nameFirstUser, ' liked you!'));
         END IF;   
     END IF;
 
@@ -193,7 +193,7 @@ BEGIN
             SELECT users.first_name, users.last_name INTO @secondFirstName, @secondLastName  FROM users WHERE id = NEW.second_userid;
             SET @nameSecondUser = CONCAT(@secondFirstName, ' ', @secondLastName);
             INSERT INTO notification (userid, content)
-            VALUES (NEW.first_userid, CONCAT(@nameSecondUser, ' liked you!'));
+                VALUES (NEW.first_userid, CONCAT(@nameSecondUser, ' liked you!'));
         END IF;
     END IF;
 END //
@@ -231,6 +231,12 @@ BEGIN
         VALUES 
             (NEW.first_userid, CONCAT('It''s a match! Start chatting with ', @nameSecondUser)),
             (NEW.second_userid, CONCAT('It''s a match! Start chatting with ', @nameFirstUser));
+
+        UPDATE users SET fame = fame + 5
+            WHERE id = NEW.first_userid;
+        UPDATE users SET fame = fame + 5
+            WHERE id = NEW.second_userid;
+        
     ELSEIF (NEW.first_user_like_status = FALSE OR NEW.second_user_like_status = FALSE) AND @match_status = true THEN
         UPDATE `match` SET status = FALSE 
             WHERE (first_userid = NEW.first_userid AND second_userid = NEW.second_userid) OR 
@@ -239,10 +245,16 @@ BEGIN
             INSERT INTO notification (userid, content)
             VALUES 
                 (NEW.first_userid, CONCAT(@nameSecondUser, ' Unmatched you! :('));
+            
+            UPDATE users SET fame = fame - 5
+                WHERE id = NEW.second_userid;
         ELSE
             INSERT INTO notification (userid, content)
             VALUES 
                 (NEW.second_userid, CONCAT(@nameFirstUser, ' Unmatched you! :('));
+            
+            UPDATE users SET fame = fame - 5
+                WHERE id = NEW.first_userid;
         END IF;
     END IF;
 END //
@@ -288,13 +300,14 @@ BEGIN
     WHERE (first_userid = NEW.from_userid AND second_userid = NEW.to_userid) OR
         (first_userid = NEW.to_userid AND second_userid = NEW.from_userid);
 
-    IF @status = TRUE THEN
-        UPDATE liked SET first_user_like_status = FALSE
-        WHERE (first_userid = NEW.from_userid AND second_userid = NEW.to_userid);
+    UPDATE liked SET first_user_like_status = FALSE
+    WHERE (first_userid = NEW.from_userid AND second_userid = NEW.to_userid);
 
-        UPDATE liked SET second_user_like_status = FALSE
-        WHERE (first_userid = NEW.to_userid AND second_userid = NEW.from_userid);
-    END IF;
+    UPDATE liked SET second_user_like_status = FALSE
+    WHERE (first_userid = NEW.to_userid AND second_userid = NEW.from_userid);
+    
+    UPDATE users SET fame = fame - 10
+        WHERE id = NEW.to_userid;
 END //
 
 CREATE TRIGGER after_update_blocked
@@ -311,6 +324,12 @@ BEGIN
 
         UPDATE liked SET second_user_like_status = FALSE
         WHERE (first_userid = NEW.to_userid AND second_userid = NEW.from_userid);
+
+        UPDATE users SET fame = fame - 10
+        WHERE id = NEW.to_userid;
+    ELSE
+        UPDATE users SET fame = fame + 10
+        WHERE id = NEW.to_userid;
     END IF;
 END //
 

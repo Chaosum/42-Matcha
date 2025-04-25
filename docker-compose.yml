@@ -1,28 +1,27 @@
 ﻿services:
-  # backend:
-  #   image: backend
-  #   build:
-  #     context: .
-  #     dockerfile: backend/Dockerfile
-  #   restart: always
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - DB_CONNECTION_STRING=$DB_CONNECTION_STRING
-  #     - JWT_SECRET=$JWT_SECRET
-  #     - JWT_ISSUER=$JWT_ISSUER
-  #     - JWT_AUDIENCE=$JWT_AUDIENCE
-  #     - NO_REPLY_MAIL=$NO_REPLY_MAIL
-  #     - NO_REPLY_MAIL_PASSWORD=NO_REPLY_MAIL_PASSWORD
-  #     - SMTP_HOST=$SMTP_HOST
-  #     - SMTP_PORT=$SMTP_PORT
-  #   networks:
-  #     - back-net
-  #     - front-net
-  #   ports:
-  #     - "5163:8080"
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
+  backend:
+    build:
+      context: backend
+    container_name: backend
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      NO_REPLY_MAIL: ${NO_REPLY_MAIL}
+      NO_REPLY_MAIL_PASSWORD: ${NO_REPLY_MAIL_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      IMAGE_PATH: ${IMAGE_PATH}
+    ports:
+      - "5163:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+        - ./images/:/app/images
 
   db:
     image: mysql:latest
@@ -35,8 +34,6 @@
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       LANG: C.UTF-8
-    networks:
-      - back-net
     ports:
       - "${DB_PORT}:3306"
     volumes:
@@ -56,14 +53,10 @@
   frontend:
     build:
       context: frontend
+      dockerfile: prod.Dockerfile
     restart: always
-    networks:
-      - front-net
     ports:
-      - "3000:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "3000:3000"
     depends_on:
       - db
     environment:
@@ -72,7 +65,3 @@
 
 volumes:
   db:
-
-networks:
-  front-net:
-  back-net:

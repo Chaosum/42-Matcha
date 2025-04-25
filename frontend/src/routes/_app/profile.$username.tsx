@@ -1,4 +1,9 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useLoaderData,
+} from "@tanstack/react-router";
 import { AddToHistory, CheckIsMe, GetUserProfile } from "@/lib/query.ts";
 import { Profile } from "@/components/pages/Profile.tsx";
 import { UserProfile } from "@/lib/interface.ts";
@@ -19,7 +24,6 @@ export const Route = createFileRoute("/_app/profile/$username")({
   loader: async ({ params }: { params: never }) => {
     const { username } = params as { username: string };
 
-    console.log("Loading profile for ", username);
     const profile = await GetUserProfile(username);
     if (!profile) return null;
 
@@ -29,7 +33,7 @@ export const Route = createFileRoute("/_app/profile/$username")({
 });
 
 function RouteComponent() {
-  const data = Route.useLoaderData() as UserProfile;
+  const data = useLoaderData(Route.id) as UserProfile;
 
   useEffect(() => {}, [data]);
 

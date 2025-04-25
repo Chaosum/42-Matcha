@@ -18,6 +18,7 @@ import useWebSocket from "react-use-websocket";
 import { getUserToken } from "@/auth.tsx";
 import { ChatMessage, WsMessage } from "@/lib/websocket.ts";
 import { useTheme } from "next-themes";
+import { logger } from "@/lib/logger.ts";
 
 export const Route = createFileRoute("/_app/match")({
   component: RouteComponent,
@@ -43,7 +44,7 @@ function RouteComponent() {
     },
     shouldReconnect: () => true,
     onOpen: () => {
-      console.log("opened");
+      logger.log("opened");
       const connection = {
         Message: "connection",
         Data: "Bearer " + getUserToken(),
@@ -51,25 +52,25 @@ function RouteComponent() {
       sendMessage(JSON.stringify(connection));
     },
     onClose: () => {
-      console.log("closed");
+      logger.log("closed");
     },
     onMessage: (event) => {
-      // console.log("OnMessage: ", event);
+      // logger.log("OnMessage: ", event);
       if (!event.data) return;
       if (event.data === "pong") {
-        console.log("pong");
+        logger.log("pong");
         return;
       }
 
       // Parse the incoming message
       const wsMessage = JSON.parse(event.data) as WsMessage;
       if (wsMessage.message === "channel history") {
-        console.log("channel history: ", wsMessage.data);
+        logger.log("channel history: ", wsMessage.data);
         const history = wsMessage.data as ChatMessage[];
         setChat(history);
       } else if (wsMessage.message === "chat") {
         const chatMessage = wsMessage.data as ChatMessage;
-        console.log(chatMessage);
+        logger.log(chatMessage);
 
         setChat((prevChat) => {
           return [...prevChat, chatMessage];
@@ -93,9 +94,9 @@ function RouteComponent() {
     };
 
     try {
-      console.log("sending message: ", wsMessage);
+      logger.log("sending message: ", wsMessage);
       sendMessage(JSON.stringify(wsMessage));
-      console.log("message sent");
+      logger.log("message sent");
       setChat((prevChat) => [...prevChat, chatMessage]);
     } catch (error) {
       console.error(error);

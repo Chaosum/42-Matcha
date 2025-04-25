@@ -1,4 +1,4 @@
-import {createFileRoute, useNavigate} from '@tanstack/react-router'
+import {createFileRoute, useNavigate, useSearch} from '@tanstack/react-router'
 import {FileUploadDropzone, FileUploadRoot} from '@/components/ui/file-upload'
 import {AspectRatio, Flex, Grid, Image} from '@chakra-ui/react'
 import {ToasterError, ToasterSuccess} from '@/lib/toaster.ts'
@@ -35,11 +35,7 @@ function UploadImageComponent({
 
     DownloadImage(imageName)
     .then((res) => {
-      setImage(res.data)
-    })
-    .catch((err: AxiosError) => {
-      console.error(err)
-      ToasterError('An error occured')
+      setImage(res.data);
     })
   }, [imageName])
 
@@ -134,9 +130,9 @@ function UploadImageComponent({
 
 function RouteComponent() {
   const navigate = useNavigate({from: Route.fullPath})
-  const {fromProfile} = Route.useSearch() as {
+  const fromProfile = useSearch(Route.id) as {
     fromProfile: boolean
-  }
+  } ?? false;
   const profile = useContext(UserContext)?.profileData as UserProfile
 
   return (

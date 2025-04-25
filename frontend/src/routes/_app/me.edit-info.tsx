@@ -1,4 +1,8 @@
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useLoaderData,
+  useNavigate,
+} from "@tanstack/react-router";
 import {ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
 import {useForm} from "react-hook-form";
 import {toaster} from "@/components/ui/toaster.tsx";
@@ -6,20 +10,16 @@ import {VStack} from "@chakra-ui/react";
 import {EditProfileForm} from "@/components/form/EditProfileForm.tsx";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {
-  IUserContext,
-  ProfileStatus,
-  Tags,
-  UserContext, UserProfile,
-} from "@/lib/interface.ts";
+import {ProfileStatus, Tags, UserProfile} from "@/lib/interface.ts";
 import {FetchTagsList, GetMeProfile, UpdateProfile} from "@/lib/query.ts";
-import {useContext, useEffect} from "react";
+import {useEffect} from "react";
+import {logger} from "@/lib/logger.ts";
 
 export const Route = createFileRoute("/_app/me/edit-info")({
   component: RouteComponent,
   loader: async () => {
-    const profile = await GetMeProfile() as UserProfile;
-    const tags = await FetchTagsList() as Tags[];
+    const profile = (await GetMeProfile()) as UserProfile;
+    const tags = (await FetchTagsList()) as Tags[];
 
     return {profile, tags};
   },
@@ -50,7 +50,10 @@ export type UserProfileFormValue = z.infer<typeof formSchema>;
 
 function RouteComponent() {
   const navigate = useNavigate({from: Route.fullPath});
-  const {profile, tags} = Route.useLoaderData();
+  const {profile, tags} = useLoaderData(Route.id) as {
+    profile: UserProfile;
+    tags: Tags[];
+  };
 
   const form = useForm<UserProfileFormValue>({
     resolver: zodResolver(formSchema),
@@ -61,13 +64,15 @@ function RouteComponent() {
       coordinates: profile?.coordinates || "",
       address: profile?.address || "",
       tags: profile?.tags ? Object.values(profile.tags) : [],
+      gender: profile?.gender || 1,
+      sexualOrientation: profile?.sexualOrientation || 1,
     },
   });
 
   const onSubmit = form.handleSubmit(async (data: UserProfileFormValue) => {
     const isCreation = profile.status !== ProfileStatus.COMPLETED;
 
-    console.log(data);
+    logger.log(data);
 
     const t = ToasterLoading(
       "Chargement",
@@ -92,6 +97,8 @@ function RouteComponent() {
     form.setValue("coordinates", profile.coordinates);
     form.setValue("address", profile.address);
     form.setValue("tags", Object.values(profile.tags));
+    form.setValue("gender", profile.gender || 1);
+    form.setValue("sexualOrientation", profile.sexualOrientation || 1);
   }, [profile]);
 
   return (

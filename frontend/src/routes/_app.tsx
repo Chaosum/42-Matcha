@@ -10,6 +10,7 @@ import { GetMeProfile } from "@/lib/query.ts";
 import { ProfileStatus, UserContext, UserProfile } from "@/lib/interface.ts";
 import { useState } from "react";
 import { getUserToken } from "@/auth.tsx";
+import { logger } from "@/lib/logger.ts";
 
 export const Route = createFileRoute("/_app")({
   component: RouteComponent,
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/_app")({
     if (!profile) return;
 
     const search = new URLSearchParams(location.search);
-    console.log(profile.status);
+    logger.log(profile.status);
 
     if (
       profile.status === ProfileStatus.INFO &&

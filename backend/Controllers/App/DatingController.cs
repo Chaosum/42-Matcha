@@ -62,7 +62,7 @@ public class DatingController : ControllerBase
 
     [HttpGet]
     [Route("[action]")]
-    private List<ProfilesModel> GetMatchingProfiles(FiltersModel matchingSettings, FullUserProfileModel profile)
+    private (int, List<ProfilesModel>) GetMatchingProfiles(FiltersModel matchingSettings, FullUserProfileModel profile)
     {
         using MySqlConnection dbClient = DbHelper.GetOpenConnection();
         using var command = new MySqlCommand("GetMatchingProfiles", dbClient);
@@ -80,6 +80,11 @@ public class DatingController : ControllerBase
         command.Parameters.AddWithValue("ref_coordinates_str", profile.Coordinates);
         command.Parameters.AddWithValue("result_offset",matchingSettings.resultOffset);
         command.Parameters.AddWithValue("result_limit",matchingSettings.resultLimit);
+        var totalCountParam = new MySqlParameter("@total_count", MySqlDbType.Int32)
+        {
+            Direction = ParameterDirection.Output
+        };
+        command.Parameters.Add(totalCountParam);
         var readerProfiles = command.ExecuteReader();
         List<ProfilesModel> profilesMatchingFilters = new();
         while (readerProfiles.Read())
@@ -101,7 +106,9 @@ public class DatingController : ControllerBase
                 gender = readerProfiles.GetString("gender")
             });
         }
-        return profilesMatchingFilters;
+        readerProfiles.Close();
+        int totalCount = (int)totalCountParam.Value;
+        return (totalCount, profilesMatchingFilters);
     }
 
 
@@ -132,9 +139,13 @@ public class DatingController : ControllerBase
         //on recupere les profils qui match les gaps qu'on a renseigner
         try
         {
+            int totalCountRows = 0;
             List<ProfilesModel> profilesMatchingFilters = new();
-            profilesMatchingFilters = GetMatchingProfiles(matchingSettings, profile);
-            return Ok(profilesMatchingFilters);
+            (totalCountRows, profilesMatchingFilters) = GetMatchingProfiles(matchingSettings, profile);
+            return Ok(new {
+                profiles = profilesMatchingFilters,
+                totalCount = totalCountRows
+            });
         }
         catch (Exception ex)
         {

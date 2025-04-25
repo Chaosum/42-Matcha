@@ -12,9 +12,33 @@ CREATE PROCEDURE GetMatchingProfiles (
     IN ref_sexual_orientation_id INT,
     IN ref_coordinates_str VARCHAR(100),
     IN result_offset INT,
-    IN result_limit INT
+    IN result_limit INT,
+    OUT total_count INT
 )
 BEGIN
+    -- 1. Calcul du nombre total de résultats sans LIMIT
+    SELECT COUNT(DISTINCT u.id) INTO total_count
+    FROM users u
+    JOIN pictures AS p ON p.user_id = u.id
+    JOIN users_tags AS ut ON ut.user_id = u.id
+    JOIN tags t ON t.id = ut.tag_id
+    JOIN gender g ON g.id = u.gender_id
+    LEFT JOIN blocked b 
+        ON (b.from_userid = ref_user_id AND b.to_userid = u.id)
+        OR (b.from_userid = u.id AND b.to_userid = ref_user_id)
+    WHERE u.id != ref_user_id
+    AND b.from_userid IS NULL
+    AND p.position = 1
+    AND ABS(ref_fame - u.fame) <= fame_gap
+    AND ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates)/1000 <= max_distance_gap
+    AND ABS(TIMESTAMPDIFF(YEAR, u.birth_date, ref_birthdate)) <= max_age_gap
+    AND (
+        (ref_sexual_orientation_id = 1 AND u.gender_id != ref_gender_id AND (u.sexual_orientation = 1 OR u.sexual_orientation = 3))
+        OR (ref_sexual_orientation_id = 2 AND u.gender_id = ref_gender_id AND (u.sexual_orientation = 2 OR u.sexual_orientation = 3))
+        OR (ref_sexual_orientation_id = 3 AND NOT (u.gender_id = ref_gender_id AND u.sexual_orientation = 1))
+    );
+
+    -- 2. Résultats paginés
     SELECT 
         u.id,
         u.username,
@@ -28,7 +52,7 @@ BEGIN
         ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates)/1000 AS distance_to_ref,
         (
             u.fame 
-            - ((ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates) / 1000) * 10) 
+            - ((ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates) / 1000)) 
             + (50 * (
                 SELECT COUNT(*) 
                 FROM users_tags ut2 
@@ -62,37 +86,34 @@ BEGIN
         ON (b.from_userid = ref_user_id AND b.to_userid = u.id)
         OR (b.from_userid = u.id AND b.to_userid = ref_user_id)
     WHERE u.id != ref_user_id
-    AND b.from_userid IS NULL  -- Exclut les utilisateurs bloqués dans les deux sens
+    AND b.from_userid IS NULL
     AND p.position = 1
-    AND ABS(ref_fame - u.fame) <= fame_gap
-    AND ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates)/1000 <= max_distance_gap
-    AND ABS(TIMESTAMPDIFF(YEAR, u.birth_date, ref_birthdate)) <= max_age_gap
     AND (
-        -- Hétéro → cherche le genre opposé, orientation hétéro ou bi
+        (fame_gap != 0 AND ABS(ref_fame - u.fame) <= fame_gap) OR fame_gap = 0
+    )
+    AND (
+        (max_distance_gap != 0 AND (ST_Distance_Sphere(ST_GeomFromText(ref_coordinates_str), u.coordinates) / 1000) <= max_distance_gap) OR max_distance_gap = 0
+    )
+    AND (
+        (max_age_gap != 0 AND ABS(TIMESTAMPDIFF(YEAR, u.birth_date, ref_birthdate)) <= max_age_gap) OR max_age_gap = 0
+    )
+    AND (
         (ref_sexual_orientation_id = 1 AND u.gender_id != ref_gender_id AND (u.sexual_orientation = 1 OR u.sexual_orientation = 3))
-
-        -- Gay → cherche le même genre, orientation gay ou bi
         OR (ref_sexual_orientation_id = 2 AND u.gender_id = ref_gender_id AND (u.sexual_orientation = 2 OR u.sexual_orientation = 3))
-
-        -- Bi → accepte tout sauf les hétéros du même genre
         OR (ref_sexual_orientation_id = 3 AND NOT (u.gender_id = ref_gender_id AND u.sexual_orientation = 1))
     )
     GROUP BY u.id, u.username, u.first_name, u.birth_date, u.address, distance_to_ref, common_tags, p.image_url, g.name
     ORDER BY 
         CASE 
             WHEN sort_by = 'birth_date' THEN u.birth_date
-            WHEN sort_by = 'distance' THEN distance_to_ref
-        END ASC,  -- Ces deux critères sont triés en ASC
+            WHEN sort_by = 'distance' THEN CAST(distance_to_ref AS DECIMAL)
+        END ASC,
         CASE 
-            WHEN sort_by = 'fame' THEN calculatedFame
+            WHEN sort_by = 'fame' THEN u.fame
             WHEN sort_by = 'common_tags' THEN common_tags
-        END DESC,  -- Ces deux critères sont triés en DESC
-        calculatedFame DESC  -- Si égalité, on trie par popularité
+        END DESC,
+        calculatedFame DESC
     LIMIT result_limit OFFSET result_offset;
 END //
 
 DELIMITER ;
-
-
-
-

@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import {createContext} from "react";
 
 export interface UserProfile {
   username: string;
@@ -69,3 +69,22 @@ export type FiltersModel = {
   resultOffset: number;
   resultLimit: number;
 };
+
+export type LikeResponse = {
+  matchStatus: boolean;
+  message: string;
+}
+
+export interface Profile {
+  id: number;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  address: string;
+  tags: string[];
+  distance: number;
+  fame: number;
+  profileImageUrl: string;
+  imgData: string;
+}

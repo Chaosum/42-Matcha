@@ -9,6 +9,7 @@ import {
   Stack,
   Textarea,
   VStack,
+  RadioGroup,
 } from "@chakra-ui/react";
 import {Controller, useController, UseFormReturn} from "react-hook-form";
 import {FormEventHandler, useEffect, useState} from "react";
@@ -17,11 +18,12 @@ import {
   GetCoordinates,
   useCoordinate,
 } from "@/lib/useCoordinate.ts";
-import {Radio, RadioGroup} from "@/components/ui/radio.tsx";
+// import {RadioGroup} from "@/components/ui/radio.tsx";
 import {UserProfileFormValue} from "@/routes/_app/me.edit-info.tsx";
 import {Tags, UserProfile} from "@/lib/interface.ts";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {AddNewTag, UpdateEmail} from "@/lib/query.ts";
+import {logger} from "@/lib/logger.ts";
 
 export function EditProfileForm(props: {
   profile: UserProfile;
@@ -36,8 +38,8 @@ export function EditProfileForm(props: {
   const [address, setAddress] = useState<string>("");
   const [newTag, setNewTag] = useState<string>("");
   const [email, setEmail] = useState<string>(profile.email);
-
-  console.log("EditProfileForm", profile.status);
+  const [gender, setGender] = useState<string>("1");
+  const [sexualOrientation, setSexualOrientation] = useState<string>("1");
 
   const tags = useController({
     control,
@@ -59,23 +61,32 @@ export function EditProfileForm(props: {
   const invalidTags = !!errors.tags;
 
   useEffect(() => {
+    if (profile) {
+      setSexualOrientation(profile.sexualOrientation?.toString() || "1");
+      setGender(profile.gender?.toString() || "1");
+    }
+    setValue("sexualOrientation", 1);
+    setValue("gender", 1);
+  }, []);
+
+  useEffect(() => {
     if (!profile.coordinates) {
       if (!initCoordinates) return;
-      console.log("Init coordinates:", initCoordinates);
+      logger.log("Init coordinates:", initCoordinates);
 
       if (initCoordinates.access) {
         setValue(
           "coordinates",
-          initCoordinates.latitude.toString() +
+          initCoordinates.longitude.toString() +
           "," +
-          initCoordinates.longitude.toString()
+          initCoordinates.latitude.toString()
         );
         GetAddressFromCoordinates(
           initCoordinates.latitude,
           initCoordinates.longitude
         ).then((address) => {
           if (!address) return;
-          console.log("Address from coordinates:", address);
+          logger.log("Address from coordinates:", address);
           setAddress(address);
         });
       }
@@ -163,33 +174,73 @@ export function EditProfileForm(props: {
                   <Field.ErrorText>{errors.lastName?.message}</Field.ErrorText>
                 </Field.Root>
               </HStack>
-              <Controller
-                name="gender"
-                defaultValue={1}
-                control={control}
-                render={() => (
-                  <RadioGroup defaultValue="1">
-                    <HStack gap="6">
-                      <Radio value="1">Male</Radio>
-                      <Radio value="2">Female</Radio>
-                    </HStack>
-                  </RadioGroup>
-                )}
-              />
-              <Controller
-                name="sexualOrientation"
-                control={control}
-                defaultValue={1}
-                render={() => (
-                  <RadioGroup defaultValue="1">
-                    <HStack gap="6">
-                      <Radio value="1">Hetero</Radio>
-                      <Radio value="2">Homo</Radio>
-                      <Radio value="3">Bi</Radio>
-                    </HStack>
-                  </RadioGroup>
-                )}
-              />
+              <Fieldset.Root invalid={!!errors.gender}>
+                <Fieldset.Legend>Genre</Fieldset.Legend>
+                <Controller
+                  name="gender"
+                  control={control}
+                  render={({}) => (
+                    <RadioGroup.Root
+                      name={"gender"}
+                      value={gender}
+                      onValueChange={({value}) => {
+                        setGender(value || "1");
+                        setValue("gender", parseInt(value ?? ""));
+                      }}
+                    >
+                      <HStack gap="6">
+                        <RadioGroup.Item value={"1"}>
+                          <RadioGroup.ItemHiddenInput/>
+                          <RadioGroup.ItemIndicator/>
+                          <RadioGroup.ItemText>Male</RadioGroup.ItemText>
+                        </RadioGroup.Item>
+                        <RadioGroup.Item value={"2"}>
+                          <RadioGroup.ItemHiddenInput/>
+                          <RadioGroup.ItemIndicator/>
+                          <RadioGroup.ItemText>Female</RadioGroup.ItemText>
+                        </RadioGroup.Item>
+                      </HStack>
+                    </RadioGroup.Root>
+                  )}
+                />
+              </Fieldset.Root>
+              <Fieldset.Root invalid={!!errors.sexualOrientation}>
+                <Fieldset.Legend>Sexual orientation</Fieldset.Legend>
+                <Controller
+                  name="sexualOrientation"
+                  control={control}
+                  render={({}) => (
+                    <RadioGroup.Root
+                      name={"sexualOrientation"}
+                      value={sexualOrientation}
+                      onValueChange={({value}) => {
+                        setSexualOrientation(value || "1");
+                        setValue("sexualOrientation", parseInt(value ?? ""), {
+                          shouldValidate: true,
+                        });
+                      }}
+                    >
+                      <HStack gap="6">
+                        <RadioGroup.Item value={"1"}>
+                          <RadioGroup.ItemHiddenInput/>
+                          <RadioGroup.ItemIndicator/>
+                          <RadioGroup.ItemText>Hetero</RadioGroup.ItemText>
+                        </RadioGroup.Item>
+                        <RadioGroup.Item value={"2"}>
+                          <RadioGroup.ItemHiddenInput/>
+                          <RadioGroup.ItemIndicator/>
+                          <RadioGroup.ItemText>Homo</RadioGroup.ItemText>
+                        </RadioGroup.Item>
+                        <RadioGroup.Item value={"3"}>
+                          <RadioGroup.ItemHiddenInput/>
+                          <RadioGroup.ItemIndicator/>
+                          <RadioGroup.ItemText>Bi</RadioGroup.ItemText>
+                        </RadioGroup.Item>
+                      </HStack>
+                    </RadioGroup.Root>
+                  )}
+                />
+              </Fieldset.Root>
               {profile.status !== 0 ? (
                 <Field.Root required invalid={!!errors.coordinates}>
                   <Field.Label>
@@ -200,9 +251,8 @@ export function EditProfileForm(props: {
                     value={address}
                     onBlur={async () => {
                       if (address != profile.address) {
-                        console.log("On blur:", address);
                         const result = await GetCoordinates(address);
-                        console.log(
+                        logger.log(
                           result?.latitude.toString() +
                           "," +
                           result?.longitude.toString()
@@ -251,7 +301,7 @@ export function EditProfileForm(props: {
               invalid={invalidTags}
               value={tags.field.value.map((v) => v.toString())}
               onValueChange={(e) => {
-                console.log("Tags field value:", e);
+                logger.log("Tags field value:", e);
                 tags.field.onChange(e.map((v) => parseInt(v)));
               }}
               name={tags.field.name}

@@ -104,8 +104,9 @@ public class UserProfileController(ILogger<UserProfileController> logger, ISseSe
             await likedAndMatch.ExecuteNonQueryAsync();
             
             var isLiked = likedAndMatch.Parameters["isLiked"].Value as int? ?? 0;
+            Console.WriteLine("isLiked: " + isLiked);
+            Console.WriteLine("isLiked: " + (isLiked > 0));
             profile.IsLiked = (likedAndMatch.Parameters["isLiked"].Value as int? ?? 0) > 0;
-            Console.WriteLine("isBlocked: " + isLiked);
             profile.IsBlocked = (likedAndMatch.Parameters["isBlocked"].Value as int? ?? 0) > 0;
             profile.IsMatched = (likedAndMatch.Parameters["isMatched"].Value as int? ?? 0) > 0;
             
@@ -176,14 +177,12 @@ public class UserProfileController(ILogger<UserProfileController> logger, ISseSe
                     profile.Images.Add(reader["image_url"] as string ?? "");
             }
             await reader.CloseAsync();
-            
-            // logger.LogInformation("{profile}", profile.ToString());
                 
             return Ok(profile);
         }
         catch (MySqlException e)
         {
-            // logger.LogError("{e}", e.Message);
+            logger.LogError("{e}", e.Message);
             return Problem(detail: e.Message);
         }
     }
@@ -287,6 +286,18 @@ public class UserProfileController(ILogger<UserProfileController> logger, ISseSe
             var token = JwtHelper.DecodeJwtToken(authorization);
         
             await using MySqlConnection conn = DbHelper.GetOpenConnection();
+            
+            await using var checkImage = new MySqlCommand("GetUserImage", conn);
+            checkImage.CommandType = CommandType.StoredProcedure;
+            checkImage.Parameters.AddWithValue("@userID", token.id);
+            checkImage.Parameters.AddWithValue("@_position", 1);
+            await using MySqlDataReader reader = checkImage.ExecuteReader();
+            if (!reader.Read()) {
+                logger.LogError("User has no image in first position");
+                return BadRequest("User has no image in first position");
+            }
+            await reader.CloseAsync();
+            
             await using MySqlCommand cmd = new MySqlCommand("UpdateProfileStatus", conn);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@userID", token.id);

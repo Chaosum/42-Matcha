@@ -93,19 +93,24 @@ public class MatchController(ILogger<MatchController> logger, ISseService sseSer
             };
             cmd.Parameters.Add(oldMatchStatus);
             
+            var blocked = new MySqlParameter("isBlocked", MySqlDbType.Int32) {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(blocked);
+            
             await cmd.ExecuteNonQueryAsync();
             
             var likedUserId = await UserService.GetId(data.Username);
             var nameUser = await UserService.GetName(token.id);
-            if (likedUserId > 0 && data.Liked) {
+            var isBlocked = (cmd.Parameters["isBlocked"].Value as int? ?? 0) > 0;
+            if (!isBlocked && likedUserId > 0 && data.Liked) {
                 var content = nameUser + " liked you!";
-                Console.WriteLine("CONTENT: " + content);
                 await sseService.SendNotification(likedUserId, content);
             }
             
 
             var status = (cmd.Parameters["matchStatus"].Value as int? ?? 0) > 0;
-            if (status && data.Liked) {
+            if (!isBlocked && status && data.Liked) {
                 var content1 = "It's a match! Start chatting with " + nameUser;
                 await sseService.SendNotification(likedUserId, content1);
                 
@@ -114,17 +119,19 @@ public class MatchController(ILogger<MatchController> logger, ISseService sseSer
                 await sseService.SendNotification(token.id, content2);
             }
             var oldStatus = (cmd.Parameters["oldMatchStatus"].Value as int? ?? 0) > 0;
-            if (oldStatus && !data.Liked) {
+            if (!isBlocked && oldStatus && !data.Liked) {
                 var content = nameUser + " Unmatched you! :(";
                 await sseService.SendNotification(likedUserId, content);
             }
-            
-            return Ok(new AcceptedResult {
-                Value = new {
+
+            return new AcceptedResult {
+                StatusCode = 200,
+                Value = new
+                {
                     matchStatus = status,
                     message = status ? "It's a match!" : "Like sent"
                 },
-            });
+            };
         }
         catch (MySqlException e) {
             logger.LogError(message: e.Message);

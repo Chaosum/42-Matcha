@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { Center, VStack, Text } from "@chakra-ui/react";
 import { useEffect } from "react";
+import { logger } from "@/lib/logger.ts";
 
 // Création de la route avec un loader
 export const Route = createFileRoute("/_auth/auth/verify/$id")({
@@ -34,7 +35,7 @@ const routeApi = getRouteApi("/_auth/auth/verify/$id");
 // Composant principal de la route
 function RouteComponent() {
   const { data } = routeApi.useLoaderData() as { data: string }; // Utiliser les données du loader
-  console.log(data);
+  logger.log(data);
 
   return (
     <Center minH="100vh">
@@ -51,10 +52,10 @@ function ErrorComponent({ error }: { error: Error }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(error.message);
+    logger.log(error.message);
     // Rediriger vers /auth/not-verify après une erreur
     navigate({ to: "/auth/not-verify" }).then(() =>
-      console.log("Redirected); to /auth/not-verify")
+      logger.log("Redirected); to /auth/not-verify")
     );
   }, [error.message, navigate]);
 
