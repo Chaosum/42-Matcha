@@ -13,7 +13,7 @@ namespace backend.Controllers.User;
 [Route("[controller]")]
 public class UserPictureController(ILogger<UserPictureController> logger) : ControllerBase
 {
-    private readonly string _imagePath = Environment.GetEnvironmentVariable("IMAGE_PATH_API") ?? "";
+    private readonly string _imagePath = Path.Combine(Directory.GetCurrentDirectory(), "../images/");
 
     /// <summary>
     /// Upload user picture

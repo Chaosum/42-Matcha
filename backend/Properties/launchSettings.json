@@ -25,8 +25,7 @@
         "NO_REPLY_MAIL_PASSWORD": "lhxz fazt oapt rrit",
         "SMTP_HOST": "smtp.gmail.com",
         "SMTP_PORT": "587",
-        "WS_URL": "ws://localhost:5163/ws",
-        "IMAGE_PATH_API": "/home/cybattis/Dev/42/Matcha/images/"
+        "WS_URL": "ws://localhost:5163/ws"
       }
     },
     "https": {

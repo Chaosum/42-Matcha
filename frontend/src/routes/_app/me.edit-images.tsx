@@ -56,13 +56,13 @@ function UploadImageComponent({
         if (!result)
           return;
 
-        console.log("DOWNLOAD IMAGE");
         await DownloadImage(result)
         .then((res) => {
           setImage(res.data)
         })
         .catch(async (error) => {
-          console.error(error)
+          if (error.s)
+            console.error(error)
         })
       }}
       onFileReject={(files) => {

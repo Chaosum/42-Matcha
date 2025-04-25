@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
-import { Box, Image } from "@chakra-ui/react";
-import { DownloadImage } from "@/lib/query.ts";
-import { AxiosError } from "axios";
+import {useEffect, useState} from "react";
+import {Box, Image} from "@chakra-ui/react";
+import {DownloadImage} from "@/lib/query.ts";
+import {AxiosError} from "axios";
+import {logger} from "@/lib/logger.ts";
 
 export function UserImage({
-  imageName,
-  width,
-  height,
-  borderRadius,
-}: {
+                            imageName,
+                            width,
+                            height,
+                            borderRadius,
+                          }: {
   imageName?: string;
   width?: string;
   height?: string;
@@ -19,12 +20,12 @@ export function UserImage({
   useEffect(() => {
     if (!imageName) return;
     DownloadImage(imageName)
-      .then((data) => {
-        setImage(data.data);
-      })
-      .catch((error: AxiosError) => {
-        console.error(error);
-      });
+    .then((data) => {
+      setImage(data.data);
+    })
+    .catch((error: AxiosError) => {
+      logger.log(error);
+    });
   }, []);
 
   return (
