@@ -58,9 +58,7 @@ function UploadImageComponent({
         .then((res) => {
           setImage(res.data)
         })
-        .catch(async (error) => {
-          console.error(error)
-        })
+        .catch(async () => {})
       }}
       onFileReject={(files) => {
         if (!files.files[0]) {

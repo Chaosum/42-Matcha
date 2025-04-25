@@ -13,7 +13,7 @@ export interface Logger {
 /** Log levels */
 export type LogLevel = "log" | "warn" | "error";
 
-const NO_OP: LogFn = (message?: any, ...optionalParams: any[]) => {};
+const NO_OP: LogFn = (message?: any, ...optionalParams: any[]) => { };
 
 /** Logger which outputs to the browser console */
 export class ConsoleLogger implements Logger {

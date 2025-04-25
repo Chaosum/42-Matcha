@@ -232,7 +232,6 @@ function UserAction({ data }: { data: UserProfile }) {
         variant="ghost"
         onClick={async () => {
           await ReportUser(data.username);
-          // ToasterSuccess("User reported");
         }}
       >
         <ReportIcon />
