@@ -6,7 +6,7 @@ INSERT INTO `status`(name)
     VALUES ('Pending'), ('Sent'), ('Delivered'), ('Read'), ('Error'), ('Edited');
 
 INSERT INTO tags (name)
-    VALUES ('Dessin / Peinture'), 
+    VALUES ('Dessin'),
            ('Écriture'), 
            ('Photographie'), 
            ('DIY'), 
@@ -21,12 +21,12 @@ INSERT INTO tags (name)
            ('Philosophie');
 
 INSERT INTO tags (name)
-    VALUES ('Fitness / Musculation'),
+    VALUES ('Fitness'),
            ('Randonnée'),
-           ('Yoga ou méditation'),
+           ('Yoga'),
            ('Cyclisme'),
            ('Natation'),
-           ('Sports d’équipe'),
+           ('Sports'),
            ('Escalade');
 
 INSERT INTO tags (name)
@@ -39,9 +39,11 @@ INSERT INTO tags (name)
 INSERT INTO tags (name)
     VALUES ('Cuisine'),
            ('Pâtisserie'),
-           ('Végétarisme / Véganisme'),
+           ('Véganisme'),
            ('Restauration'),
-           ('Vin / Bière / Alcool');
+           ('Cocktails'),
+           ('Vins'),
+           ('Nutrition');
 
 INSERT INTO tags (name)
     VALUES ('Voyages'),

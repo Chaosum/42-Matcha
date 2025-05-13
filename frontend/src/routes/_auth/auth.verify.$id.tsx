@@ -3,14 +3,14 @@ import {
   getRouteApi,
   useNavigate,
 } from "@tanstack/react-router";
-import { Center, VStack, Text } from "@chakra-ui/react";
-import { useEffect } from "react";
-import { logger } from "@/lib/logger.ts";
+import {Center, VStack, Text} from "@chakra-ui/react";
+import {useEffect} from "react";
+import {logger} from "@/lib/logger.ts";
 
 // Création de la route avec un loader
 export const Route = createFileRoute("/_auth/auth/verify/$id")({
-  loader: async ({ params }) => {
-    const { id } = params; // Extraire l'ID des paramètres
+  loader: async ({params}) => {
+    const {id} = params; // Extraire l'ID des paramètres
     const response = await fetch(
       `http://localhost:5163/Auth/VerifyAccount/${id}`,
       {
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_auth/auth/verify/$id")({
     }
 
     const data = await response.text(); // Récupérer les données
-    return { data }; // Retourner les données pour les utiliser dans le composant
+    return {data}; // Retourner les données pour les utiliser dans le composant
   },
   component: RouteComponent,
   errorComponent: ErrorComponent,
@@ -34,11 +34,11 @@ const routeApi = getRouteApi("/_auth/auth/verify/$id");
 
 // Composant principal de la route
 function RouteComponent() {
-  const { data } = routeApi.useLoaderData() as { data: string }; // Utiliser les données du loader
+  const {data} = routeApi.useLoaderData() as { data: string }; // Utiliser les données du loader
   logger.log(data);
 
   return (
-    <Center minH="100vh">
+    <Center minH="100%">
       <VStack>
         <Text fontSize="lg" color="green.500">
           Account verified successfully
@@ -48,19 +48,19 @@ function RouteComponent() {
   );
 }
 
-function ErrorComponent({ error }: { error: Error }) {
+function ErrorComponent({error}: { error: Error }) {
   const navigate = useNavigate();
 
   useEffect(() => {
     logger.log(error.message);
     // Rediriger vers /auth/not-verify après une erreur
-    navigate({ to: "/auth/not-verify" }).then(() =>
+    navigate({to: "/auth/not-verify"}).then(() =>
       logger.log("Redirected); to /auth/not-verify")
     );
   }, [error.message, navigate]);
 
   return (
-    <Center minH="100vh">
+    <Center minH="100%">
       <VStack>
         <Text fontSize="lg" color="red.500">
           Redirecting to /not-verify...

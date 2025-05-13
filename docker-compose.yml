@@ -15,14 +15,13 @@
       NO_REPLY_MAIL_PASSWORD: ${NO_REPLY_MAIL_PASSWORD}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
-      IMAGE_PATH: ${IMAGE_PATH}
     ports:
       - "5163:8080"
     depends_on:
       db:
         condition: service_healthy
     volumes:
-        - ${IMAGE_PATH}:/app/images
+      - ${IMAGE_PATH}:/app/images
 
   db:
     image: mysql:latest

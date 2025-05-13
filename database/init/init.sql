@@ -185,7 +185,7 @@ BEGIN
         END IF;   
     END IF;
 
-    IF NEW.second_user_like_status != OLD.second_user_like_status AND NEW.second_user_like_status THEN
+    IF NEW.second_user_like_status != OLD.second_user_like_status AND NEW.second_user_like_status = TRUE THEN
         SELECT blocked.is_blocked INTO @isBlocked FROM blocked
         WHERE (from_userid = NEW.second_userid AND to_userid = NEW.first_userid);
 
@@ -207,6 +207,11 @@ BEGIN
 
     SELECT username INTO first_username FROM users WHERE id = NEW.first_userid;
     SELECT username INTO second_username FROM users WHERE id = NEW.second_userid;
+
+    SELECT users.first_name, users.last_name INTO @firstName, @lastName FROM users WHERE id = NEW.first_userid;
+    SELECT users.first_name, users.last_name INTO @secondName, @secondLastName FROM users WHERE id = NEW.second_userid;
+    SET @nameFirstUser = CONCAT(@firstName, ' ', @lastName);
+    SET @nameSecondUser = CONCAT(@secondName, ' ', @secondLastName);
     
     SELECT status INTO @match_status FROM `match` 
         WHERE (first_userid = NEW.first_userid AND second_userid = NEW.second_userid) OR 
@@ -222,11 +227,6 @@ BEGIN
                 (first_userid = NEW.second_userid AND second_userid = NEW.first_userid);
         END IF;
         
-        SELECT users.first_name, users.last_name INTO @firstName, @lastName FROM users WHERE id = NEW.first_userid;
-        SELECT users.first_name, users.last_name INTO @secondName, @secondLastName FROM users WHERE id = NEW.second_userid;
-        SET @nameFirstUser = CONCAT(@firstName, ' ', @lastName);
-        SET @nameSecondUser = CONCAT(@secondName, ' ', @secondLastName);
-        
         INSERT INTO notification (userid, content)
         VALUES 
             (NEW.first_userid, CONCAT('It''s a match! Start chatting with ', @nameSecondUser)),
@@ -236,26 +236,24 @@ BEGIN
             WHERE id = NEW.first_userid;
         UPDATE users SET fame = fame + 5
             WHERE id = NEW.second_userid;
-        
-    ELSEIF (NEW.first_user_like_status = FALSE OR NEW.second_user_like_status = FALSE) AND @match_status = true THEN
+    ELSEIF (NEW.first_user_like_status = FALSE OR NEW.second_user_like_status = FALSE) AND @match_status = TRUE THEN
         UPDATE `match` SET status = FALSE 
             WHERE (first_userid = NEW.first_userid AND second_userid = NEW.second_userid) OR 
                   (first_userid = NEW.second_userid AND second_userid = NEW.first_userid);
+        
         IF (NEW.first_user_like_status = TRUE) THEN
             INSERT INTO notification (userid, content)
             VALUES 
                 (NEW.first_userid, CONCAT(@nameSecondUser, ' Unmatched you! :('));
-            
-            UPDATE users SET fame = fame - 5
-                WHERE id = NEW.second_userid;
-        ELSE
+        ELSEIF (NEW.second_user_like_status = TRUE) THEN
             INSERT INTO notification (userid, content)
             VALUES 
                 (NEW.second_userid, CONCAT(@nameFirstUser, ' Unmatched you! :('));
-            
-            UPDATE users SET fame = fame - 5
-                WHERE id = NEW.first_userid;
         END IF;
+        UPDATE users SET fame = fame - 5
+            WHERE id = NEW.second_userid;
+        UPDATE users SET fame = fame - 5
+            WHERE id = NEW.first_userid;
     END IF;
 END //
 

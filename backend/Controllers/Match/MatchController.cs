@@ -119,7 +119,7 @@ public class MatchController(ILogger<MatchController> logger, ISseService sseSer
                 await sseService.SendNotification(token.id, content2);
             }
             var oldStatus = (cmd.Parameters["oldMatchStatus"].Value as int? ?? 0) > 0;
-            if (!isBlocked && oldStatus && !data.Liked) {
+            if (oldStatus && !data.Liked) {
                 var content = nameUser + " Unmatched you! :(";
                 await sseService.SendNotification(likedUserId, content);
             }

@@ -14,6 +14,7 @@ import {
 } from '@/lib/query.ts'
 import {UserContext, UserProfile} from '@/lib/interface.ts'
 import {AxiosError} from 'axios'
+import {logger} from "@/lib/logger.ts";
 
 export const Route = createFileRoute('/_app/me/edit-images')({
   component: RouteComponent,
@@ -51,14 +52,18 @@ function UploadImageComponent({
         if (!file.files[0]) return
 
         // upload file
-        const result = await UploadToServer(file.files[0], position)
-        if (!result) return
+        const result = await UploadToServer(file.files[0], position);
+        if (!result)
+          return;
 
         await DownloadImage(result)
         .then((res) => {
           setImage(res.data)
         })
-        .catch(async () => {})
+        .catch(async (error) => {
+          if (error.s)
+            console.error(error)
+        })
       }}
       onFileReject={(files) => {
         if (!files.files[0]) {

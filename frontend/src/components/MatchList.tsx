@@ -6,20 +6,21 @@ import {
   Float,
   Status,
 } from "@chakra-ui/react";
-import { Avatar } from "@/components/ui/avatar";
-import { useNavigate } from "@tanstack/react-router";
-import { ConversationIcon } from "@/components/Icons.tsx";
-import { Match } from "@/lib/interface.ts";
-import { useEffect, useState } from "react";
-import { DownloadImage } from "@/lib/query.ts";
-import { AxiosError } from "axios";
-import { useTheme } from "next-themes";
+import {Avatar} from "@/components/ui/avatar";
+import {useNavigate} from "@tanstack/react-router";
+import {ConversationIcon} from "@/components/Icons.tsx";
+import {Match} from "@/lib/interface.ts";
+import {useEffect, useState} from "react";
+import {DownloadImage} from "@/lib/query.ts";
+import {AxiosError} from "axios";
+import {useTheme} from "next-themes";
+import {logger} from "@/lib/logger.ts";
 
 export function MatchList({
-  userData,
-  username,
-  setUsername,
-}: {
+                            userData,
+                            username,
+                            setUsername,
+                          }: {
   userData: Match;
   username: string;
   setUsername: (value: string) => void;
@@ -30,12 +31,14 @@ export function MatchList({
 
   useEffect(() => {
     DownloadImage(userData.imageUrl)
-      .then((data) => {
-        setImage(data.data);
-      })
-      .catch((error: AxiosError) => {
-        console.error(error);
-      });
+    .then((data) => {
+      setImage(data.data);
+    })
+    .catch((error: AxiosError) => {
+      if (error.response?.status !== 404 && error.response?.status !== 401) {
+        logger.error("Error downloading image:", error);
+      }
+    });
   });
 
   function backgroundColor() {
@@ -72,13 +75,13 @@ export function MatchList({
         variant={"plain"}
         onClick={async () => {
           // @ts-expect-error-error
-          await navigate({ to: "/profile/" + userData.username });
+          await navigate({to: "/profile/" + userData.username});
         }}
       >
         <Avatar name={userData.name} size="lg" src={image}>
           <Float placement="bottom-end" offsetX="1" offsetY="1">
             <Status.Root colorPalette={userData.isOnline ? "green" : "red"}>
-              <Status.Indicator />
+              <Status.Indicator/>
             </Status.Root>
           </Float>
         </Avatar>
@@ -90,7 +93,7 @@ export function MatchList({
           setUsername(userData.username);
         }}
       >
-        <ConversationIcon />
+        <ConversationIcon/>
       </IconButton>
     </HStack>
   );

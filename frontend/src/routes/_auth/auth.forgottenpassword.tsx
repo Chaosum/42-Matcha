@@ -1,5 +1,5 @@
-import { FormEvent, useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {FormEvent, useState} from 'react'
+import {createFileRoute, useNavigate} from '@tanstack/react-router'
 import {
   Card,
   Button,
@@ -9,8 +9,8 @@ import {
   Flex,
   useDisclosure,
 } from '@chakra-ui/react'
-import { Link } from '@tanstack/react-router'
-import { RiArrowRightLine } from 'react-icons/ri'
+import {Link} from '@tanstack/react-router'
+import {RiArrowRightLine} from 'react-icons/ri'
 
 export const Route = createFileRoute('/_auth/auth/forgottenpassword')({
   component: ForgottenPasswordForm,
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/_auth/auth/forgottenpassword')({
 export default function ForgottenPasswordForm() {
   const [email, setEmail] = useState('')
   const navigate = useNavigate()
-  const { open, onOpen, onClose } = useDisclosure()
+  const {open, onOpen, onClose} = useDisclosure()
   const [redirectTimeout, setRedirectTimeout] = useState<ReturnType<
     typeof setTimeout
   > | null>(null)
@@ -31,8 +31,8 @@ export default function ForgottenPasswordForm() {
         'http://localhost:5163/Auth/ForgottenPassword/',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ Email: email, UserName: email }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({Email: email, UserName: email}),
         },
       )
 
@@ -40,13 +40,13 @@ export default function ForgottenPasswordForm() {
 
       // Démarre un timer pour redirection après 5 secondes
       const timeout = setTimeout(() => {
-        navigate({ to: '/auth/login' })
+        navigate({to: '/auth/login'})
       }, 5000)
       setRedirectTimeout(timeout)
     } catch (err) {
       onOpen() // Même comportement en cas d'erreur
       const timeout = setTimeout(() => {
-        navigate({ to: '/auth/login' })
+        navigate({to: '/auth/login'})
       }, 5000)
       setRedirectTimeout(timeout)
     }
@@ -57,12 +57,12 @@ export default function ForgottenPasswordForm() {
       clearTimeout(redirectTimeout) // Stoppe le timeout si l'utilisateur clique
     }
     onClose()
-    await navigate({ to: '/auth/login' }) // Redirige immédiatement
+    await navigate({to: '/auth/login'}) // Redirige immédiatement
   }
 
   return (
-    <Flex justify="center" align="center" h="100vh">
-      <Card.Root maxW="lg" minW={{ base: 'sm' }}>
+    <Flex justify="center" align="center" h="100%">
+      <Card.Root maxW="lg" minW={{base: 'sm'}}>
         <Card.Header>
           <Text fontSize="xl" fontWeight="bold">
             Forgotten Password
@@ -96,7 +96,7 @@ export default function ForgottenPasswordForm() {
             <Text>Remembered your password?</Text>
             <Link to={'/auth/login'} className="chakra-button">
               <Button size="xs" variant="subtle">
-                Sign in <RiArrowRightLine />
+                Sign in <RiArrowRightLine/>
               </Button>
             </Link>
           </Stack>
