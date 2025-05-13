@@ -184,7 +184,6 @@ function Home() {
         </Select.Root>
         <Button mt={6}
                 onClick={async () => {
-                  logger.log("pouet0", resultOffset, totalCount);
                   if (resultOffset == 0) {
                     await fetchProfiles();
                   } else {
@@ -214,7 +213,6 @@ function Home() {
           width={"fit-content"}
           height={"fit-content"}
           onClick={async () => {
-            logger.log("pouet2", resultOffset, totalCount);
             if (resultOffset + 10 <= totalCount) {
               setResultOffset(prev => prev + 10);
             }
