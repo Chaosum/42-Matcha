@@ -15,46 +15,60 @@ namespace backend.Controllers.App;
 public class DatingController : ControllerBase
 {
 
+    [HttpGet]
+    [Route("[action]")]
     public FullUserProfileModel? GetUserProfile(string username)
     {
         using MySqlConnection conn = DbHelper.GetOpenConnection();
-        using MySqlCommand cmd = new MySqlCommand("GetUserProfile", conn);
+        using MySqlCommand cmd = new MySqlCommand("GetFullUserProfile", conn);
         cmd.CommandType = CommandType.StoredProcedure;
-        cmd.Parameters.AddWithValue("@username", username);
+        cmd.Parameters.AddWithValue("@usernameInput", username);
 
         using MySqlDataReader reader = cmd.ExecuteReader();
         if (!reader.Read()) return null;
-        
-        FullUserProfileModel profile = new FullUserProfileModel
+        try
         {
-            id = reader.GetInt32("id"),
-            Username = reader.GetString("username"),
-            FirstName = reader.GetString("first_name"),
-            LastName = reader.GetString("last_name"),
-            Gender = reader.GetInt32("gender_id"),
-            SexualOrientation = reader.GetInt32("sexual_orientation"),
-            Biography = reader.GetString("biography"),
-            Coordinates = reader.GetString("coordinates"),
-            Address = reader.GetString("address"),
-            ProfileCompletionPercentage = reader.GetInt32("profile_completion_percentage"),
-            FameRating = reader.GetInt32("fame"),
-            IsVerified = reader.GetBoolean("is_verified"),
-            Tags = reader.GetString("tags").Split(","),
-            profilePictureUrl = reader.GetString("profile_picture"),
-            pictures = reader.GetString("pictures").Split(","),
-            birthDate = reader.GetDateTime("birth_date"),
-            Status = reader.GetInt32("profile_status")
-        };
-        return profile;
+
+            FullUserProfileModel profile = new FullUserProfileModel
+            {
+                Id = reader.GetInt32("id"),
+                Username = reader.GetString("username"),
+                FirstName = reader.GetString("first_name"),
+                LastName = reader.GetString("last_name"),
+                Gender = reader.GetInt32("gender_id"),
+                SexualOrientation = reader.GetInt32("sexual_orientation"),
+                Biography = reader.GetString("biography"),
+                Coordinates = reader.GetString("coordinates"),
+                Address = reader.GetString("address"),
+                ProfileCompletionPercentage = reader.GetInt32("profile_completion_percentage"),
+                FameRating = reader.GetInt32("fame"),
+                IsVerified = reader.GetBoolean("is_verified"),
+                Tags = reader.GetString("tags").Split(","),
+                profilePictureUrl = reader.GetString("profile_picture"),
+                pictures = reader.IsDBNull("pictures")?
+                            null :
+                            reader.GetString("pictures").Split(","),
+                birthDate = reader.GetDateTime("birth_date"),
+                Status = reader.GetInt32("profile_status")
+            };
+            return profile;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error when retrieving profile : " + e.Message);
+        }
+        return null;
     }
 
-    private List<ProfilesModel> GetMatchingProfiles(FiltersModel matchingSettings, FullUserProfileModel profile)
+    [HttpGet]
+    [Route("[action]")]
+    private (int, List<ProfilesModel>) GetMatchingProfiles(FiltersModel matchingSettings, FullUserProfileModel profile)
     {
         using MySqlConnection dbClient = DbHelper.GetOpenConnection();
         using var command = new MySqlCommand("GetMatchingProfiles", dbClient);
         command.CommandType = CommandType.StoredProcedure;
 
-        command.Parameters.AddWithValue("@ref_user_id", profile.id);
+        command.Parameters.AddWithValue("@ref_user_id", profile.Id);
         command.Parameters.AddWithValue("@max_age_gap", matchingSettings.ageGap);
         command.Parameters.AddWithValue("@max_distance_gap", matchingSettings.distanceGap);
         command.Parameters.AddWithValue("fame_gap", matchingSettings.fameGap);
@@ -63,9 +77,14 @@ public class DatingController : ControllerBase
         command.Parameters.AddWithValue("ref_birthdate", profile.birthDate);
         command.Parameters.AddWithValue("ref_gender_id", profile.Gender);
         command.Parameters.AddWithValue("ref_sexual_orientation_id", profile.SexualOrientation);
-        command.Parameters.AddWithValue("ref_coordinates", profile.Coordinates);
+        command.Parameters.AddWithValue("ref_coordinates_str", profile.Coordinates);
         command.Parameters.AddWithValue("result_offset",matchingSettings.resultOffset);
         command.Parameters.AddWithValue("result_limit",matchingSettings.resultLimit);
+        var totalCountParam = new MySqlParameter("@total_count", MySqlDbType.Int32)
+        {
+            Direction = ParameterDirection.Output
+        };
+        command.Parameters.Add(totalCountParam);
         var readerProfiles = command.ExecuteReader();
         List<ProfilesModel> profilesMatchingFilters = new();
         while (readerProfiles.Read())
@@ -83,10 +102,13 @@ public class DatingController : ControllerBase
                 distance = readerProfiles.GetInt32("distance_to_ref"),
                 calculatedFame = readerProfiles.GetInt32("calculatedFame"),
                 profileImageUrl = readerProfiles.GetString("image_url"),
-                commonTags = readerProfiles.GetInt32("common_tags")
+                commonTags = readerProfiles.GetInt32("common_tags"),
+                gender = readerProfiles.GetString("gender")
             });
         }
-        return profilesMatchingFilters;
+        readerProfiles.Close();
+        int totalCount = (int)totalCountParam.Value;
+        return (totalCount, profilesMatchingFilters);
     }
 
 
@@ -117,9 +139,13 @@ public class DatingController : ControllerBase
         //on recupere les profils qui match les gaps qu'on a renseigner
         try
         {
+            int totalCountRows = 0;
             List<ProfilesModel> profilesMatchingFilters = new();
-            profilesMatchingFilters = GetMatchingProfiles(matchingSettings, profile);
-            return Ok(profilesMatchingFilters);
+            (totalCountRows, profilesMatchingFilters) = GetMatchingProfiles(matchingSettings, profile);
+            return Ok(new {
+                profiles = profilesMatchingFilters,
+                totalCount = totalCountRows
+            });
         }
         catch (Exception ex)
         {

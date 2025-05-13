@@ -1,75 +1,78 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
-import { getUserToken, setUserToken } from "@/auth.tsx";
+import { AxiosError, AxiosResponse } from "axios";
+import { getUserToken } from "@/auth.tsx";
 import { ToasterError, ToasterSuccess } from "@/lib/toaster.ts";
-import { UserProfileFormValue } from "@/routes/_app/profile.edit-info.tsx";
-import { Match, Tags, UserProfile } from "@/lib/interface.ts";
-import { ChatMessage } from "@/lib/Websocket.ts";
-
-axios.defaults.baseURL = "http://localhost:5163";
-axios.interceptors.response.use(
-  (res: AxiosResponse) => {
-    return res; // Simply return the response
-  },
-  async (err) => {
-    const status = err.response ? err.response.status : null;
-
-    if (status === 401) {
-      console.log("Unauthorized, logging out...");
-      setUserToken(null);
-    }
-
-    if (status === 403 && err.response.data) {
-      return Promise.reject(err.response.data);
-    }
-
-    return Promise.reject(err);
-  }
-);
+import { UserProfileFormValue } from "@/routes/_app/me.edit-info.tsx";
+import {
+  FiltersModel,
+  LikeResponse,
+  Match,
+  Tags,
+  UserProfile,
+} from "@/lib/interface.ts";
+import { instance } from "@/lib/useAxios.ts";
+import { logger } from "@/lib/logger.ts";
 
 export async function GetMeProfile() {
-  return await axios
+  return await instance
     .get("/UserProfile/Me", {
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + getUserToken(),
       },
     })
-    .then((response) => {
-      console.log(response.data);
-      return response.data as UserProfile;
+    .then((response: AxiosResponse<UserProfile>) => {
+      logger.log(response.data);
+      return response.data;
     })
-    .catch((err) => {
-      console.log(err);
-      if (err.status !== 200) {
-        ToasterError("Erreur", "Impossible de récupérer le profil");
-      }
+    .catch((err: AxiosError) => {
+      logger.log(err.code + ": " + err.message);
       return null;
     });
 }
 
 export async function GetUserProfile(username: string) {
-  return await axios
+  logger.log("GetUserProfile", username);
+
+  return await instance
     .get("/UserProfile/Get/" + username, {
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + getUserToken(),
       },
     })
-    .then((response) => {
-      console.log(response.data);
-      return response.data as UserProfile;
+    .then((response: AxiosResponse<UserProfile>) => {
+      logger.log(response.data);
+      return response.data;
     })
     .catch((err) => {
-      console.log(err);
-      if (err.status !== 200) {
-        ToasterError("Erreur", "Impossible de récupérer le profil");
+      logger.log(err.code + ": " + err.message);
+      if (err.status === 404) {
+        ToasterError("Utilisateur introuvable");
       }
       return null;
     });
 }
 
+export async function CheckIsMe(username: string) {
+  return await instance
+    .get("/UserProfile/CheckIsMe/" + username, {
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+        Authorization: "Bearer " + getUserToken(),
+      },
+    })
+    .then((response: AxiosResponse) => {
+      logger.log(response.data);
+      return response.data as boolean;
+    })
+    .catch((err: AxiosError) => {
+      logger.log(err.code + ": " + err.message);
+      return true;
+    });
+}
+
 export async function UpdateProfile(data: UserProfileFormValue) {
-  const profile = await axios
+  const profile = await instance
     .post(
       "/UserProfile/Update",
       {
@@ -92,15 +95,14 @@ export async function UpdateProfile(data: UserProfileFormValue) {
       return res;
     })
     .catch(async (err) => {
-      console.log(err);
       return err.response;
     });
 
-  if (profile.status !== 200) {
+  if (profile === null || profile?.status !== 200) {
     return profile;
   }
 
-  return await axios
+  return await instance
     .post(
       "/Tags/Update",
       {
@@ -117,32 +119,35 @@ export async function UpdateProfile(data: UserProfileFormValue) {
       return res;
     })
     .catch(async (err) => {
-      // if (err.status === 401) await auth.logout();
       return err;
     });
 }
 
 export async function FetchTagsList(): Promise<Tags[]> {
-  try {
-    const res = await axios.get("/Tags/GetList", {
+  return await instance
+    .get("/Tags/GetList", {
       headers: {
         "Content-Type": "text/plain;charset=utf-8",
         Authorization: "Bearer " + getUserToken(),
       },
+    })
+    .then((res: AxiosResponse<Tags[]>) => {
+      logger.log(res.data);
+      return res.data;
+    })
+    .catch((err: AxiosError) => {
+      if (err.response?.status !== 401) {
+        ToasterError("Impossible de récupérer la liste des tags");
+      }
+      return [] as Tags[];
     });
-    return res.data as Tags[];
-  } catch (err) {
-    console.log(err);
-    ToasterError("Erreur serveur", "Impossible de récupérer la liste des tags");
-    return [];
-  }
 }
 
 export async function DownloadImage(imageName: string) {
   const formData = new FormData();
   formData.append("imageName", imageName);
 
-  return axios.post("/UserPicture/Get/", formData, {
+  return instance.post("/UserPicture/Get/", formData, {
     headers: {
       Authorization: "Bearer " + getUserToken(),
     },
@@ -150,7 +155,7 @@ export async function DownloadImage(imageName: string) {
 }
 
 export async function DeleteImage(position: number) {
-  return axios.delete("/UserPicture/Delete/" + position, {
+  return instance.delete("/UserPicture/Delete/" + position, {
     headers: {
       Authorization: "Bearer " + getUserToken(),
     },
@@ -159,11 +164,10 @@ export async function DeleteImage(position: number) {
 
 export async function UploadToServer(file: File, position: number) {
   const formData = new FormData();
-
   formData.append("Position", position.toString());
   formData.append("Data", file);
 
-  return await axios
+  return await instance
     .post("/UserPicture/Upload", formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -171,19 +175,20 @@ export async function UploadToServer(file: File, position: number) {
       },
     })
     .then((result) => {
-      console.log(result);
+      logger.log(result);
       ToasterSuccess("Image uploaded successfully");
       return result.data;
     })
     .catch((error: AxiosError<string>) => {
-      if (error.response) ToasterError(error.response.data);
+      if (error.status != 401 && error.response)
+        ToasterError(error.response.data);
       else ToasterError("An error occured");
       return null;
     });
 }
 
 export async function ValidateProfile() {
-  return axios
+  return instance
     .get("/UserProfile/UpdateProfileStatus/", {
       headers: {
         Authorization: "Bearer " + getUserToken(),
@@ -193,14 +198,14 @@ export async function ValidateProfile() {
       ToasterSuccess(response.data);
       return true;
     })
-    .catch((err) => {
-      ToasterError(err.detail);
+    .catch(() => {
+      ToasterError("Error", "An error occured");
       return false;
     });
 }
 
 export async function LikeUser(username: string, liked: boolean) {
-  return axios
+  return instance
     .post(
       "/Match/Like/",
       {
@@ -213,22 +218,22 @@ export async function LikeUser(username: string, liked: boolean) {
         },
       }
     )
-    .then(() => {
-      return true;
+    .then((res: AxiosResponse<LikeResponse>) => {
+      return res.data;
     })
     .catch((err) => {
       ToasterError(err.detail);
-      return false;
+      return null;
     });
 }
 
 export async function BlockUser(username: string, blocked: boolean) {
-  return axios
+  return instance
     .post(
       "/Match/Block/",
       {
         username: username,
-        blocked: blocked,
+        isBlocked: blocked,
       },
       {
         headers: {
@@ -245,15 +250,38 @@ export async function BlockUser(username: string, blocked: boolean) {
     });
 }
 
+export async function ReportUser(username: string) {
+  return instance
+    .post(
+      "/Match/Report/",
+      {
+        username: username,
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + getUserToken(),
+        },
+      }
+    )
+    .then(() => {
+      ToasterSuccess("User reported");
+      return true;
+    })
+    .catch((err: AxiosError<string>) => {
+      ToasterError(err.response?.data || "An error occured");
+      return false;
+    });
+}
+
 export async function GetMatches() {
-  return await axios
+  return await instance
     .get("/Match/GetList", {
       headers: {
         Authorization: "Bearer " + getUserToken(),
       },
     })
     .then((response: AxiosResponse<Match[]>) => {
-      console.log(response.data);
+      logger.log(response.data);
       return response.data;
     })
     .catch((err: AxiosError) => {
@@ -262,37 +290,84 @@ export async function GetMatches() {
     });
 }
 
-export async function GetMessages(username: string) {
-  return await axios
-    .get("/Chat/GetMessages/" + username, {
+export async function AddNewTag(tagName: string) {
+  const formData = new FormData();
+  formData.append("tag", tagName);
+
+  return await instance
+    .post("/Tags/AddToList", formData, {
       headers: {
         Authorization: "Bearer " + getUserToken(),
       },
     })
-    .then((response: AxiosResponse<ChatMessage[]>) => {
-      console.log(response.data);
+    .then((res) => {
+      ToasterSuccess("Tag added successfully");
+      return {
+        id: res.data as number,
+        name: tagName,
+      } as Tags;
+    })
+    .catch((err) => {
+      ToasterError(err.response.data);
+      return null;
+    });
+}
+
+export async function AddToHistory(username: string) {
+  return await instance
+    .get("/History/AddVisite/" + username, {
+      headers: {
+        Authorization: "Bearer " + getUserToken(),
+      },
+    })
+    .then(() => {
+      return true;
+    })
+    .catch(() => {
+      return false;
+    });
+}
+
+export async function GetHistory() {
+  return await instance
+    .get("/History/Get", {
+      headers: {
+        Authorization: "Bearer " + getUserToken(),
+      },
+    })
+    .then((response) => {
       return response.data;
     })
-    .catch((err: AxiosError) => {
+    .catch((err) => {
       ToasterError(err.message);
       return [];
     });
 }
 
-export type FiltersModel = {
-  range: number;
-  ageGap: number;
-  distanceGap: number;
-  fameGap: number;
-  sortBy: string;
-  resultOffset: number;
-  resultLimit: number;
-};
+export async function UpdateEmail(email: string) {
+  const formData = new FormData();
+  formData.append("email", email);
+
+  return await instance
+    .post("/UserProfile/UpdateEmail", formData, {
+      headers: {
+        Authorization: "Bearer " + getUserToken(),
+      },
+    })
+    .then(() => {
+      ToasterSuccess("Email updated successfully");
+      return true;
+    })
+    .catch((err) => {
+      ToasterError(err.message);
+      return false;
+    });
+}
 
 export async function Dating(params: FiltersModel, authToken: string) {
   try {
     // Effectuer l'appel à l'API avec POST et les bons headers
-    const response = await axios.post(
+    const response = await instance.post(
       "/App/Dating", // L'URL de ton endpoint
       params, // Le corps de la requête avec les données de FiltersModel
       {
@@ -305,14 +380,14 @@ export async function Dating(params: FiltersModel, authToken: string) {
 
     // Vérifier la réponse
     if (response.status === 200) {
-      console.log("Profiles matching filters: ", response.data);
+      logger.log("Profiles matching filters: ", response.data);
       return response.data; // Retourner les profils récupérés
     } else {
-      console.error("Failed to retrieve profiles.");
+      logger.error("Failed to retrieve profiles.");
       return null;
     }
   } catch (error) {
-    console.error("Error during API call", error);
+    logger.error("Error during API call", error);
     return null; // Retourner null en cas d'erreur
   }
 }

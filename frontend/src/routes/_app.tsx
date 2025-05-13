@@ -9,14 +9,13 @@ import { Box } from "@chakra-ui/react";
 import { GetMeProfile } from "@/lib/query.ts";
 import { ProfileStatus, UserContext, UserProfile } from "@/lib/interface.ts";
 import { useState } from "react";
-import { ToasterError } from "@/lib/toaster.ts";
 import { getUserToken } from "@/auth.tsx";
+import { logger } from "@/lib/logger.ts";
 
 export const Route = createFileRoute("/_app")({
   component: RouteComponent,
   beforeLoad: async () => {
     if (!getUserToken()) {
-      ToasterError("Erreur", "Vous n'êtes pas connecté");
       throw redirect({
         to: "/auth/login",
       });
@@ -27,25 +26,26 @@ export const Route = createFileRoute("/_app")({
     if (!profile) return;
 
     const search = new URLSearchParams(location.search);
+    logger.log(profile.status);
 
     if (
       profile.status === ProfileStatus.INFO &&
-      location.pathname !== "/profile/edit-info"
+      location.pathname !== "/me/edit-info"
     ) {
       throw redirect({
-        to: "/profile/edit-info",
+        to: "/me/edit-info",
       });
     } else if (
       profile.status === ProfileStatus.IMAGES &&
-      location.pathname !== "/profile/edit-images"
+      location.pathname !== "/me/edit-images"
     ) {
       throw redirect({
-        to: "/profile/edit-images",
+        to: "/me/edit-images",
       });
     } else if (
       profile.status === ProfileStatus.COMPLETED &&
       !search.get("fromProfile") &&
-      location.pathname === "/profile/edit-images"
+      location.pathname === "/me/edit-images"
     ) {
       throw redirect({
         to: "/home",

@@ -6,9 +6,6 @@ INSERT INTO `status`(name)
     VALUES ('Pending'), ('Sent'), ('Delivered'), ('Read'), ('Error'), ('Edited');
 
 INSERT INTO tags (name)
-    VALUES ('NONE');
-
-INSERT INTO tags (name)
     VALUES ('Dessin / Peinture'), 
            ('Écriture'), 
            ('Photographie'), 
@@ -59,10 +56,3 @@ INSERT INTO tags (name)
            ('Écologie'),
            ('Bricolage'),
            ('Décoration');
-
-# # Creating tests users
-# INSERT INTO users (email, password, salt, username, birth_date)
-#     VALUES ('jean.bono@gmail.com', '1234', 'salt', 'jojo42', '1993-10-02');
-# 
-# INSERT INTO users (email, password, salt, username, birth_date)
-#     VALUES ('abcd.mail@gmail.com', 'abcd', 'salt', 'nono42', '1985-11-12');

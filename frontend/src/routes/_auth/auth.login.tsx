@@ -3,7 +3,7 @@ import { Button, Card, Flex, Stack, Text } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { LoginForm } from "@/components/form/LoginForm.tsx";
 import { toaster } from "@/components/ui/toaster.tsx";
-import { ToasterError, ToasterSuccess } from "@/lib/toaster.ts";
+import { ToasterError, ToasterLoading, ToasterSuccess } from "@/lib/toaster.ts";
 import { RiArrowRightLine } from "react-icons/ri";
 import { setUserToken } from "@/auth.tsx";
 
@@ -44,7 +44,7 @@ function RouteComponent() {
   const form = useForm<LoginFormValues>();
 
   const onSubmit = form.handleSubmit(async (data) => {
-    const t = toaster.loading({ title: "Connexion en cours..." });
+    const t = ToasterLoading("Connexion en cours...");
     const result = await TryLogin(data);
     toaster.remove(t);
 

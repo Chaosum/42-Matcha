@@ -1,11 +1,12 @@
 ﻿using System.Data;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using RandomUserGenerator;
 
-var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
-                       "Server=localhost;Port=3307;Database=db;user=user;password=password;";
+var connectionString = "Server=localhost;Port=3307;Database=db;user=root;password=root-pass;";
 
-var imagesPath = "D:/Documents/dev/dev/RandomUserGenerator/";
+var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "../images/");
+Console.WriteLine($"Images will be saved to: {imagesPath}");
 
 // Ask for number of male and female users to generate
 Console.WriteLine("Welcome to Random User Generator!");
@@ -22,29 +23,42 @@ Console.WriteLine("Initializing...");
 if (!Directory.Exists(imagesPath))
     Directory.CreateDirectory(imagesPath);
 
-await using MySqlConnection connection = new(connectionString);
-connection.Open();
-
-if (connection.State != ConnectionState.Open)
+try
 {
-    Console.WriteLine("Failed to connect to the database.");
-    return;
-}
+    await using MySqlConnection connection = new(connectionString);
+    connection.Open();
 
-Console.WriteLine("Generating User Data...");
-if (numberOfFemaleUsers > 0)
-{
-    Console.WriteLine("Generating female users...");
-    await GenerateUser.Generate(connection, "female", numberOfFemaleUsers, imagesPath);
-    Console.WriteLine("Done!");
-}
+    if (connection.State != ConnectionState.Open)
+    {
+        Console.WriteLine("Failed to connect to the database.");
+        return;
+    }
 
-if (numberOfMaleUsers > 0)
-{
-    Console.WriteLine("Generating male users...");
-    await GenerateUser.Generate(connection, "male", numberOfMaleUsers, imagesPath);
-    Console.WriteLine("Done!");
+    Console.WriteLine("Generating User Data...");
+    if (numberOfFemaleUsers > 0)
+    {
+        Console.WriteLine("Generating female users...");
+        await GenerateUser.Generate(connection, "female", numberOfFemaleUsers, imagesPath);
+        Console.WriteLine("Done!");
+    }
+
+    if (numberOfMaleUsers > 0)
+    {
+        Console.WriteLine("Generating male users...");
+        await GenerateUser.Generate(connection, "male", numberOfMaleUsers, imagesPath);
+        Console.WriteLine("Done!");
+    }
+
+    connection.Close();
+
 }
-connection.Close();
+catch (MySqlException ex)
+{
+    Console.WriteLine($"MySQL Error: {ex.Message}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
 
 Console.WriteLine("Generation Complete!");

@@ -5,9 +5,9 @@ CREATE PROCEDURE GetUserProfile(IN username VARCHAR(50))
 BEGIN   
     SELECT id INTO @userID FROM users WHERE users.username = username;
     
-    SELECT first_name, last_name, birth_date, gender_id, sexual_orientation, biography,
+    SELECT id, email, first_name, last_name, birth_date, gender_id, sexual_orientation, biography,
            profile_completion_percentage, ST_AsText(coordinates) AS coordinates, fame, is_verified, profile_completion_percentage, 
-           profile_status, users.address, users.username
+           profile_status, users.address, users.username, last_time_online
     FROM users WHERE users.id = @userID;
 
     SELECT name, id FROM tags WHERE id IN (SELECT tag_id FROM users_tags WHERE user_id = @userID);
@@ -23,22 +23,20 @@ CREATE PROCEDURE GetLikeAndMatch(
 )
 BEGIN 
     SELECT id INTO @otherUserID FROM users WHERE username = otherUser;
+
+    SET isLiked = 0;
     
-    SELECT first_user_like_status INTO @first FROM liked 
-        WHERE first_userid = userID AND second_userid = @otherUserID;
-    
-    IF @first IS NOT NULL THEN
-        SET isLiked = @first;
+    IF userID < @otherUserID THEN
+        SELECT first_user_like_status 
+            INTO isLiked FROM liked 
+            WHERE first_userid = userID AND second_userid = @otherUserID;
     ELSE
-        SELECT second_user_like_status INTO @second FROM liked 
+        SELECT second_user_like_status 
+            INTO isLiked FROM liked 
             WHERE first_userid = @otherUserID AND second_userid = userID;
-        
-        IF @second IS NOT NULL THEN
-            SET isLiked = @second;
-        END IF;
     END IF;
     
-    SELECT COUNT(*) INTO isBlocked FROM blocked 
+    SELECT is_blocked INTO isBlocked FROM blocked 
         WHERE from_userid = userID AND to_userid = @otherUserID;
 
     SELECT status INTO isMatched FROM `match` 
@@ -47,7 +45,7 @@ BEGIN
 END //
 
 
-CREATE PROCEDURE GetFullUserProfile(IN username VARCHAR(50))
+CREATE PROCEDURE GetFullUserProfile(IN usernameInput VARCHAR(50))
 BEGIN
     SELECT  u.id,
             u.username,
@@ -61,35 +59,33 @@ BEGIN
             u.profile_completion_percentage,
             u.fame,
             u.is_verified,
-            GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ",") AS tags,
-            MAX(CASE WHEN p.position = 1 THEN p.image_url END) AS profile_picture,  -- Utilisation de MAX
+            GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ',') AS tags,
+            MAX(CASE WHEN p.position = 1 THEN p.image_url END) AS profile_picture,
             GROUP_CONCAT(
                 CASE WHEN p.position != 1 THEN p.image_url END
-                ORDER BY p.position SEPARATOR ","
-            ) AS pictures
+                ORDER BY p.position SEPARATOR ','
+            ) AS pictures,
             u.birth_date,
             u.profile_status
     FROM users u
-    LEFT JOIN pictures p
-        ON p.user_id = u.id
-    LEFT JOIN users_tags ut
-        ON ut.user_id = u.id
-    LEFT JOIN tags t
-        ON t.id = ut.tag_id
-    WHERE u.username = @username
-    GROUP BY u.id, u.first_name,
-            u.last_name,
-            u.birth_date,
-            u.gender_id,
-            u.sexual_orientation,
-            u.biography,
-            u.profile_completion_percentage,
-            u.coordinates,
-            u.fame,
-            u.is_verified,
-            u.profile_status,
-            u.address,
-            u.username;
+    LEFT JOIN pictures p ON p.user_id = u.id
+    LEFT JOIN users_tags ut ON ut.user_id = u.id
+    LEFT JOIN tags t ON t.id = ut.tag_id
+    WHERE u.username = usernameInput
+    GROUP BY    u.id,
+                u.first_name,
+                u.last_name,
+                u.birth_date,
+                u.gender_id,
+                u.sexual_orientation,
+                u.biography,
+                u.profile_completion_percentage,
+                u.coordinates,
+                u.fame,
+                u.is_verified,
+                u.profile_status,
+                u.address,
+                u.username;
 END //
 
 
@@ -106,9 +102,9 @@ CREATE PROCEDURE UpdateUserProfile(
     IN lastName VARCHAR(50),
     IN genderID INT,
     IN sexualOrientation INT,
-    IN coordinates VARCHAR(50),
-    IN biography VARCHAR(250),
-    IN address VARCHAR(100)
+    IN Coordinates VARCHAR(50),
+    IN Biography VARCHAR(250),
+    IN Address VARCHAR(100)
 )
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -119,10 +115,10 @@ BEGIN
     START TRANSACTION;
 
     UPDATE users SET users.first_name = firstName 
-                 WHERE id = userID AND first_name != firstName;
+                 WHERE id = userID;
     
     UPDATE users SET users.last_name = lastName 
-                 WHERE id = userID AND last_name != lastName;
+                 WHERE id = userID;
     
     UPDATE users SET users.gender_id = genderID 
                  WHERE id = userID;
@@ -131,16 +127,16 @@ BEGIN
                  WHERE id = userID;
      
     UPDATE users SET users.coordinates = POINT(
-            CAST(SUBSTRING_INDEX(coordinates, ',', 1) AS DECIMAL(10,6)),
-            CAST(SUBSTRING_INDEX(coordinates, ',', -1) AS DECIMAL(10,6))
+            CAST(SUBSTRING_INDEX(Coordinates, ',', 1) AS DECIMAL(10,6)),
+            CAST(SUBSTRING_INDEX(Coordinates, ',', -1) AS DECIMAL(10,6))
          )
          WHERE id = userID;
     
-    UPDATE users SET users.biography = biography 
-                 WHERE id = userID AND users.biography != biography;
+    UPDATE users SET users.biography = Biography 
+                 WHERE id = userID;
     
-    UPDATE users SET users.address = address 
-                 WHERE id = userID AND users.address != address;
+    UPDATE users SET users.address = Address 
+                 WHERE id = userID;
     
     COMMIT;
 
@@ -180,6 +176,25 @@ END //
 
 # TAGS PROCEDURES
 # =================================================================================================
+CREATE PROCEDURE AddTag(
+    IN tagName VARCHAR(50),
+    OUT tagId INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+    END;
+    
+    START TRANSACTION;
+
+    INSERT INTO tags (name)
+        VALUES (tagName);
+    
+    COMMIT;
+
+    SELECT LAST_INSERT_ID() INTO tagId;
+END //
 
 CREATE PROCEDURE GetAllTags()
 BEGIN
@@ -269,22 +284,22 @@ END //
 # Upload image
 CREATE PROCEDURE UploadImage(
     IN userID INT,
-    IN position INT,
+    IN _position INT,
     IN imageUrl TEXT
 )
 BEGIN
-    IF position < 1 OR position > 5 THEN
+    IF _position < 1 OR _position > 5 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Position must be between 1 and 5';
     END IF;
     
-    SELECT COUNT(@count) FROM pictures WHERE user_id = userID AND pictures.position = position;
+    SELECT COUNT(@count) FROM pictures WHERE user_id = userID AND pictures.position = _position;
     
     IF @count > 0 THEN
-        UPDATE pictures SET image_url = imageUrl WHERE user_id = userID AND pictures.position = position;
+        UPDATE pictures SET image_url = imageUrl WHERE user_id = userID AND pictures.position = _position;
     ELSE
         INSERT INTO pictures (user_id, pictures.position, image_url)
-            VALUES (userID, position, imageUrl);
+            VALUES (userID, _position, imageUrl);
     END IF;
     
     CALL UpdateProfileCompletionPercentage(userID);
@@ -331,12 +346,12 @@ END //
 # Get user Images
 CREATE PROCEDURE GetUserImage(
     IN userID INT,
-    IN position INT
+    IN _position INT
 )
 BEGIN
     SELECT image_url
     FROM pictures
-    WHERE user_id = userID AND pictures.position = position;
+    WHERE user_id = userID AND pictures.position = _position;
 END //
 
 # Insert generated user
@@ -425,6 +440,7 @@ END //
 CREATE PROCEDURE GetUserMatches(IN userID INT)
 BEGIN
     SELECT
+        u.id,
         u.username,
         u.first_name,
         u.last_name,
@@ -432,32 +448,169 @@ BEGIN
     FROM users u
              LEFT JOIN pictures p ON u.id = p.user_id AND p.position = 1
     WHERE u.id IN (
-        SELECT first_userid FROM `match` WHERE second_userid = userID
+        SELECT first_userid FROM `match` WHERE second_userid = userID AND status = 1
         UNION
-        SELECT second_userid FROM `match` WHERE first_userid = userID);
+        SELECT second_userid FROM `match` WHERE first_userid = userID AND status = 1);
 END //
 
 CREATE PROCEDURE LikeUser(
     IN userID INT,
     IN likedUser VARCHAR(50),
-    IN isLike BOOLEAN
+    IN isLike BOOLEAN,
+    OUT matchStatus INT,
+    OUT oldMatchStatus INT,
+    OUT isBlocked INT
 )
 BEGIN
-    SELECT id INTO @user2id FROM users WHERE username = likedUser;
+    SET matchStatus = 0;
+    SELECT id INTO @likedUserId FROM users WHERE username = likedUser;
     
     SELECT COUNT(*) INTO @count FROM liked 
-            WHERE first_userid = userID AND second_userid = @user2id OR 
-                    first_userid = @user2id AND second_userid = userID;
+            WHERE first_userid = userID AND second_userid = @likedUserId OR 
+                    first_userid = @likedUserId AND second_userid = userID;
+    
+    SELECT status INTO oldMatchStatus FROM `match` 
+            WHERE (first_userid = userID AND second_userid = @likedUserId) OR 
+                  (first_userid = @likedUserId AND second_userid = userID);
+    
+    SELECT is_blocked INTO isBlocked FROM blocked 
+        WHERE from_userid = @likedUserId AND to_userid = userID;
     
     IF @count = 0 THEN
         INSERT INTO liked (first_userid, second_userid, first_user_like_status)
-            VALUES (userID, @user2id, isLike);
+            VALUES (userID, @likedUserId, isLike);
+
+        UPDATE users SET fame = fame + 1
+            WHERE id = userID;
     ELSE
         UPDATE liked SET first_user_like_status = isLike
-            WHERE (first_userid = userID AND second_userid = @user2id);
+            WHERE (first_userid = userID AND second_userid = @likedUserId);
         UPDATE liked SET second_user_like_status = isLike
-            WHERE (first_userid = @user2id AND second_userid = userID);
+            WHERE (first_userid = @likedUserId AND second_userid = userID);
+        
+        IF isLike = TRUE THEN
+            SELECT first_user_like_status, second_user_like_status INTO @first, @second
+                FROM liked WHERE (first_userid = userID AND second_userid = @likedUserId) 
+                OR (first_userid = @likedUserId AND second_userid = userID);
+            IF @first = 1 AND @second = 1 THEN
+                SET matchStatus = 1;
+            END IF;
+
+            UPDATE users SET fame = fame + 1
+                WHERE id = @likedUserId;
+        ELSE
+            UPDATE users SET fame = fame - 1
+            WHERE id = @likedUserId;
+        END IF;  
     END IF;
+END //
+
+CREATE PROCEDURE BlockUser(
+    IN fromUserId INT,
+    IN toUser VARCHAR(50),
+    IN isBlocked BOOLEAN
+)
+BEGIN
+    SELECT id INTO @toUserId FROM users WHERE username = toUser;
+
+    SELECT COUNT(*) INTO @count FROM blocked
+        WHERE from_userid = fromUserId AND to_userid = @toUserId;
+
+    IF @count = 0 THEN
+        INSERT INTO blocked (from_userid, to_userid, is_blocked)
+        VALUES (fromUserId, @toUserId, isBlocked);
+    ELSE
+        UPDATE blocked SET is_blocked = isBlocked
+            WHERE (from_userid = fromUserId AND to_userid = @toUserId);
+    END IF;
+END //
+
+CREATE PROCEDURE IsBlocked(
+    IN fromUser VARCHAR(50),
+    IN toUser VARCHAR(50)
+)
+BEGIN 
+    SELECT is_blocked FROM blocked
+        WHERE from_userid = (SELECT id FROM users WHERE username = fromUser)
+          AND to_userid = (SELECT id FROM users WHERE username = toUser);
+END //
+    
+
+CREATE PROCEDURE ReportUser(
+    IN fromUserId INT,
+    IN reportedUser VARCHAR(50),
+    OUT alreadyReported INT
+)
+BEGIN
+    SELECT id INTO @toUserId FROM users WHERE username = reportedUser;
+    
+    SELECT COUNT(*) INTO alreadyReported FROM reports
+        WHERE userid = fromUserId AND userid_reported = @toUserId;
+    
+    IF alreadyReported = 0 THEN
+        INSERT INTO reports (userid, userid_reported)
+            VALUES (fromUserId, @toUserId);
+    END IF;
+END //
+
+CREATE PROCEDURE AddToHistory(
+    IN user_id INT,
+    IN userVisited VARCHAR(50),
+    OUT result INT
+)
+BEGIN
+    SELECT id INTO @visitedUserId FROM users WHERE username = userVisited;
+    
+    SELECT COUNT(*) INTO result FROM views 
+        WHERE userid = user_id AND userid_seen = @visitedUserId;
+    
+    IF result = 0 THEN
+        INSERT INTO views (userid, userid_seen)
+            VALUES (user_id, @visitedUserId);
+    END IF;
+END //
+
+CREATE PROCEDURE GetName(
+    IN user_id INT
+)
+BEGIN
+    SELECT first_name, last_name FROM users WHERE id = user_id;
+END //
+
+CREATE PROCEDURE GetHistory(
+    IN user_id INT
+)
+BEGIN
+    SELECT u.username, u.first_name, u.last_name
+    FROM users u
+        WHERE u.id IN (SELECT userid_seen FROM views WHERE userid = user_id);
+END //
+
+CREATE PROCEDURE UpdateEmail(
+    IN userID INT,
+    IN newEmail VARCHAR(50)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+    END;
+    
+    START TRANSACTION;
+
+    UPDATE users SET email = newEmail 
+                 WHERE id = userID AND email != newEmail;
+    
+    COMMIT;
+END //
+
+CREATE PROCEDURE GetNotifications(
+    IN userID INT
+)
+BEGIN
+    SELECT * FROM notification n
+        WHERE n.userid = userID 
+        ORDER BY n.created_on DESC;
 END //
 
 DELIMITER ;

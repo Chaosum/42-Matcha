@@ -26,7 +26,7 @@
         "SMTP_HOST": "smtp.gmail.com",
         "SMTP_PORT": "587",
         "WS_URL": "ws://localhost:5163/ws",
-        "IMAGE_PATH": "/home/cyril/Dev/42/Occ/Matcha/images/"
+        "IMAGE_PATH": "/home/cybattis/Dev/42/Matcha/images/"
       }
     },
     "https": {

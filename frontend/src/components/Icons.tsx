@@ -39,7 +39,7 @@ export function SunIcon() {
   );
 }
 
-export function LikeIcon({ checked }: { checked: boolean }) {
+export function LikeIcon({checked}: { checked: boolean }) {
   return (
     <Icon aria-label="Like" className={"user-icon"}>
       <svg
@@ -54,7 +54,8 @@ export function LikeIcon({ checked }: { checked: boolean }) {
         strokeLinejoin="round"
         className="lucide lucide-heart-icon lucide-heart"
       >
-        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+        <path
+          d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
       </svg>
     </Icon>
   );
@@ -93,13 +94,13 @@ export function UserIcon({
   );
 }
 
-export function NotificationIcon() {
+export function NotificationIcon({color}: { color: string }) {
   return (
     <Icon aria-label="Notification" className={"notification-button"}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        fill="currentColor"
+        fill={color}
         className="size-6"
       >
         <path
@@ -240,9 +241,10 @@ export function EditIcon() {
         strokeLinejoin="round"
         className="lucide lucide-user-round-pen"
       >
-        <path d="M2 21a8 8 0 0 1 10.821-7.487" />
-        <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
-        <circle cx="10" cy="8" r="5" />
+        <path d="M2 21a8 8 0 0 1 10.821-7.487"/>
+        <path
+          d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+        <circle cx="10" cy="8" r="5"/>
       </svg>
     </Icon>
   );
@@ -263,8 +265,9 @@ export function EditImages() {
         strokeLinejoin="round"
         className="lucide lucide-square-pen"
       >
-        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path
+          d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
       </svg>
     </Icon>
   );
@@ -289,7 +292,7 @@ export function DefaultAvatar() {
   );
 }
 
-export function BlockIcon({ checked }: { checked: boolean }) {
+export function BlockIcon({checked}: { checked: boolean }) {
   return (
     <Icon aria-label={"Block"} className={"user-icon"}>
       <svg
@@ -304,7 +307,8 @@ export function BlockIcon({ checked }: { checked: boolean }) {
         strokeLinejoin="round"
         className="lucide lucide-shield-icon lucide-shield"
       >
-        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+        <path
+          d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
       </svg>
     </Icon>
   );
@@ -325,8 +329,9 @@ export function UnBlockIcon() {
         strokeLinejoin="round"
         className="lucide lucide-shield-ban-icon lucide-shield-ban"
       >
-        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-        <path d="m4.243 5.21 14.39 12.472" />
+        <path
+          d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+        <path d="m4.243 5.21 14.39 12.472"/>
       </svg>
     </Icon>
   );
@@ -347,8 +352,8 @@ export function ReportIcon() {
         strokeLinejoin="round"
         className="lucide lucide-flag-icon lucide-flag"
       >
-        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-        <line x1="4" x2="4" y1="22" y2="15" />
+        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+        <line x1="4" x2="4" y1="22" y2="15"/>
       </svg>
     </Icon>
   );

@@ -19,5 +19,6 @@ namespace backend.Models.App
         public required int fame { get; set;}
         public required int calculatedFame { get; set;}
         public required int commonTags { get; set;}
+        public required string gender { get; set;}
     }
 }

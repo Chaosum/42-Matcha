@@ -5,7 +5,8 @@ namespace backend.Models.Users;
 
 public class FullUserProfileModel
 {
-    public int? id {get;set;}
+    [SwaggerIgnore]
+    public int? Id {get;set;}
 
     [SwaggerIgnore]
     public string? Username {get;set;}

@@ -15,16 +15,17 @@ import { Route as AuthImport } from './routes/_auth'
 import { Route as AppImport } from './routes/_app'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthAuthImport } from './routes/_auth/auth_'
+import { Route as AppMeImport } from './routes/_app/me_'
 import { Route as AppMatchImport } from './routes/_app/match'
-import { Route as AppLikesImport } from './routes/_app/likes'
 import { Route as AppHomeImport } from './routes/_app/home'
+import { Route as AppHistoryImport } from './routes/_app/history'
 import { Route as AuthAuthRegisterImport } from './routes/_auth/auth.register'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth.login'
 import { Route as AuthAuthForgottenpasswordImport } from './routes/_auth/auth.forgottenpassword'
-import { Route as AppProfileMeImport } from './routes/_app/profile.me'
-import { Route as AppProfileEditInfoImport } from './routes/_app/profile.edit-info'
-import { Route as AppProfileEditImagesImport } from './routes/_app/profile.edit-images'
 import { Route as AppProfileUsernameImport } from './routes/_app/profile.$username'
+import { Route as AppMeProfileImport } from './routes/_app/me.profile'
+import { Route as AppMeEditInfoImport } from './routes/_app/me.edit-info'
+import { Route as AppMeEditImagesImport } from './routes/_app/me.edit-images'
 import { Route as AuthAuthVerifyIdImport } from './routes/_auth/auth.verify.$id'
 
 // Create/Update Routes
@@ -51,21 +52,27 @@ const AuthAuthRoute = AuthAuthImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 
+const AppMeRoute = AppMeImport.update({
+  id: '/me_',
+  path: '/me',
+  getParentRoute: () => AppRoute,
+} as any)
+
 const AppMatchRoute = AppMatchImport.update({
   id: '/match',
   path: '/match',
   getParentRoute: () => AppRoute,
 } as any)
 
-const AppLikesRoute = AppLikesImport.update({
-  id: '/likes',
-  path: '/likes',
-  getParentRoute: () => AppRoute,
-} as any)
-
 const AppHomeRoute = AppHomeImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+
+const AppHistoryRoute = AppHistoryImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -87,27 +94,27 @@ const AuthAuthForgottenpasswordRoute = AuthAuthForgottenpasswordImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 
-const AppProfileMeRoute = AppProfileMeImport.update({
-  id: '/profile/me',
-  path: '/profile/me',
-  getParentRoute: () => AppRoute,
-} as any)
-
-const AppProfileEditInfoRoute = AppProfileEditInfoImport.update({
-  id: '/profile/edit-info',
-  path: '/profile/edit-info',
-  getParentRoute: () => AppRoute,
-} as any)
-
-const AppProfileEditImagesRoute = AppProfileEditImagesImport.update({
-  id: '/profile/edit-images',
-  path: '/profile/edit-images',
-  getParentRoute: () => AppRoute,
-} as any)
-
 const AppProfileUsernameRoute = AppProfileUsernameImport.update({
   id: '/profile/$username',
   path: '/profile/$username',
+  getParentRoute: () => AppRoute,
+} as any)
+
+const AppMeProfileRoute = AppMeProfileImport.update({
+  id: '/me/profile',
+  path: '/me/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+
+const AppMeEditInfoRoute = AppMeEditInfoImport.update({
+  id: '/me/edit-info',
+  path: '/me/edit-info',
+  getParentRoute: () => AppRoute,
+} as any)
+
+const AppMeEditImagesRoute = AppMeEditImagesImport.update({
+  id: '/me/edit-images',
+  path: '/me/edit-images',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -142,18 +149,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthImport
       parentRoute: typeof rootRoute
     }
+    '/_app/history': {
+      id: '/_app/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AppHistoryImport
+      parentRoute: typeof AppImport
+    }
     '/_app/home': {
       id: '/_app/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AppHomeImport
-      parentRoute: typeof AppImport
-    }
-    '/_app/likes': {
-      id: '/_app/likes'
-      path: '/likes'
-      fullPath: '/likes'
-      preLoaderRoute: typeof AppLikesImport
       parentRoute: typeof AppImport
     }
     '/_app/match': {
@@ -163,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMatchImport
       parentRoute: typeof AppImport
     }
+    '/_app/me_': {
+      id: '/_app/me_'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof AppMeImport
+      parentRoute: typeof AppImport
+    }
     '/_auth/auth_': {
       id: '/_auth/auth_'
       path: '/auth'
@@ -170,32 +184,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAuthImport
       parentRoute: typeof AuthImport
     }
+    '/_app/me/edit-images': {
+      id: '/_app/me/edit-images'
+      path: '/me/edit-images'
+      fullPath: '/me/edit-images'
+      preLoaderRoute: typeof AppMeEditImagesImport
+      parentRoute: typeof AppImport
+    }
+    '/_app/me/edit-info': {
+      id: '/_app/me/edit-info'
+      path: '/me/edit-info'
+      fullPath: '/me/edit-info'
+      preLoaderRoute: typeof AppMeEditInfoImport
+      parentRoute: typeof AppImport
+    }
+    '/_app/me/profile': {
+      id: '/_app/me/profile'
+      path: '/me/profile'
+      fullPath: '/me/profile'
+      preLoaderRoute: typeof AppMeProfileImport
+      parentRoute: typeof AppImport
+    }
     '/_app/profile/$username': {
       id: '/_app/profile/$username'
       path: '/profile/$username'
       fullPath: '/profile/$username'
       preLoaderRoute: typeof AppProfileUsernameImport
-      parentRoute: typeof AppImport
-    }
-    '/_app/profile/edit-images': {
-      id: '/_app/profile/edit-images'
-      path: '/profile/edit-images'
-      fullPath: '/profile/edit-images'
-      preLoaderRoute: typeof AppProfileEditImagesImport
-      parentRoute: typeof AppImport
-    }
-    '/_app/profile/edit-info': {
-      id: '/_app/profile/edit-info'
-      path: '/profile/edit-info'
-      fullPath: '/profile/edit-info'
-      preLoaderRoute: typeof AppProfileEditInfoImport
-      parentRoute: typeof AppImport
-    }
-    '/_app/profile/me': {
-      id: '/_app/profile/me'
-      path: '/profile/me'
-      fullPath: '/profile/me'
-      preLoaderRoute: typeof AppProfileMeImport
       parentRoute: typeof AppImport
     }
     '/_auth/auth/forgottenpassword': {
@@ -232,23 +246,25 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AppRouteChildren {
+  AppHistoryRoute: typeof AppHistoryRoute
   AppHomeRoute: typeof AppHomeRoute
-  AppLikesRoute: typeof AppLikesRoute
   AppMatchRoute: typeof AppMatchRoute
+  AppMeRoute: typeof AppMeRoute
+  AppMeEditImagesRoute: typeof AppMeEditImagesRoute
+  AppMeEditInfoRoute: typeof AppMeEditInfoRoute
+  AppMeProfileRoute: typeof AppMeProfileRoute
   AppProfileUsernameRoute: typeof AppProfileUsernameRoute
-  AppProfileEditImagesRoute: typeof AppProfileEditImagesRoute
-  AppProfileEditInfoRoute: typeof AppProfileEditInfoRoute
-  AppProfileMeRoute: typeof AppProfileMeRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppHistoryRoute: AppHistoryRoute,
   AppHomeRoute: AppHomeRoute,
-  AppLikesRoute: AppLikesRoute,
   AppMatchRoute: AppMatchRoute,
+  AppMeRoute: AppMeRoute,
+  AppMeEditImagesRoute: AppMeEditImagesRoute,
+  AppMeEditInfoRoute: AppMeEditInfoRoute,
+  AppMeProfileRoute: AppMeProfileRoute,
   AppProfileUsernameRoute: AppProfileUsernameRoute,
-  AppProfileEditImagesRoute: AppProfileEditImagesRoute,
-  AppProfileEditInfoRoute: AppProfileEditInfoRoute,
-  AppProfileMeRoute: AppProfileMeRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -274,14 +290,15 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthRouteWithChildren
+  '/history': typeof AppHistoryRoute
   '/home': typeof AppHomeRoute
-  '/likes': typeof AppLikesRoute
   '/match': typeof AppMatchRoute
+  '/me': typeof AppMeRoute
   '/auth': typeof AuthAuthRoute
+  '/me/edit-images': typeof AppMeEditImagesRoute
+  '/me/edit-info': typeof AppMeEditInfoRoute
+  '/me/profile': typeof AppMeProfileRoute
   '/profile/$username': typeof AppProfileUsernameRoute
-  '/profile/edit-images': typeof AppProfileEditImagesRoute
-  '/profile/edit-info': typeof AppProfileEditInfoRoute
-  '/profile/me': typeof AppProfileMeRoute
   '/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/auth/login': typeof AuthAuthLoginRoute
   '/auth/register': typeof AuthAuthRegisterRoute
@@ -291,14 +308,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthRouteWithChildren
+  '/history': typeof AppHistoryRoute
   '/home': typeof AppHomeRoute
-  '/likes': typeof AppLikesRoute
   '/match': typeof AppMatchRoute
+  '/me': typeof AppMeRoute
   '/auth': typeof AuthAuthRoute
+  '/me/edit-images': typeof AppMeEditImagesRoute
+  '/me/edit-info': typeof AppMeEditInfoRoute
+  '/me/profile': typeof AppMeProfileRoute
   '/profile/$username': typeof AppProfileUsernameRoute
-  '/profile/edit-images': typeof AppProfileEditImagesRoute
-  '/profile/edit-info': typeof AppProfileEditInfoRoute
-  '/profile/me': typeof AppProfileMeRoute
   '/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/auth/login': typeof AuthAuthLoginRoute
   '/auth/register': typeof AuthAuthRegisterRoute
@@ -310,14 +328,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/_app/history': typeof AppHistoryRoute
   '/_app/home': typeof AppHomeRoute
-  '/_app/likes': typeof AppLikesRoute
   '/_app/match': typeof AppMatchRoute
+  '/_app/me_': typeof AppMeRoute
   '/_auth/auth_': typeof AuthAuthRoute
+  '/_app/me/edit-images': typeof AppMeEditImagesRoute
+  '/_app/me/edit-info': typeof AppMeEditInfoRoute
+  '/_app/me/profile': typeof AppMeProfileRoute
   '/_app/profile/$username': typeof AppProfileUsernameRoute
-  '/_app/profile/edit-images': typeof AppProfileEditImagesRoute
-  '/_app/profile/edit-info': typeof AppProfileEditInfoRoute
-  '/_app/profile/me': typeof AppProfileMeRoute
   '/_auth/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/_auth/auth/login': typeof AuthAuthLoginRoute
   '/_auth/auth/register': typeof AuthAuthRegisterRoute
@@ -329,14 +348,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | ''
+    | '/history'
     | '/home'
-    | '/likes'
     | '/match'
+    | '/me'
     | '/auth'
+    | '/me/edit-images'
+    | '/me/edit-info'
+    | '/me/profile'
     | '/profile/$username'
-    | '/profile/edit-images'
-    | '/profile/edit-info'
-    | '/profile/me'
     | '/auth/forgottenpassword'
     | '/auth/login'
     | '/auth/register'
@@ -345,14 +365,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | ''
+    | '/history'
     | '/home'
-    | '/likes'
     | '/match'
+    | '/me'
     | '/auth'
+    | '/me/edit-images'
+    | '/me/edit-info'
+    | '/me/profile'
     | '/profile/$username'
-    | '/profile/edit-images'
-    | '/profile/edit-info'
-    | '/profile/me'
     | '/auth/forgottenpassword'
     | '/auth/login'
     | '/auth/register'
@@ -362,14 +383,15 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_auth'
+    | '/_app/history'
     | '/_app/home'
-    | '/_app/likes'
     | '/_app/match'
+    | '/_app/me_'
     | '/_auth/auth_'
+    | '/_app/me/edit-images'
+    | '/_app/me/edit-info'
+    | '/_app/me/profile'
     | '/_app/profile/$username'
-    | '/_app/profile/edit-images'
-    | '/_app/profile/edit-info'
-    | '/_app/profile/me'
     | '/_auth/auth/forgottenpassword'
     | '/_auth/auth/login'
     | '/_auth/auth/register'
@@ -410,13 +432,14 @@ export const routeTree = rootRoute
     "/_app": {
       "filePath": "_app.tsx",
       "children": [
+        "/_app/history",
         "/_app/home",
-        "/_app/likes",
         "/_app/match",
-        "/_app/profile/$username",
-        "/_app/profile/edit-images",
-        "/_app/profile/edit-info",
-        "/_app/profile/me"
+        "/_app/me_",
+        "/_app/me/edit-images",
+        "/_app/me/edit-info",
+        "/_app/me/profile",
+        "/_app/profile/$username"
       ]
     },
     "/_auth": {
@@ -429,36 +452,40 @@ export const routeTree = rootRoute
         "/_auth/auth/verify/$id"
       ]
     },
-    "/_app/home": {
-      "filePath": "_app/home.tsx",
+    "/_app/history": {
+      "filePath": "_app/history.tsx",
       "parent": "/_app"
     },
-    "/_app/likes": {
-      "filePath": "_app/likes.tsx",
+    "/_app/home": {
+      "filePath": "_app/home.tsx",
       "parent": "/_app"
     },
     "/_app/match": {
       "filePath": "_app/match.tsx",
       "parent": "/_app"
     },
+    "/_app/me_": {
+      "filePath": "_app/me_.tsx",
+      "parent": "/_app"
+    },
     "/_auth/auth_": {
       "filePath": "_auth/auth_.tsx",
       "parent": "/_auth"
     },
+    "/_app/me/edit-images": {
+      "filePath": "_app/me.edit-images.tsx",
+      "parent": "/_app"
+    },
+    "/_app/me/edit-info": {
+      "filePath": "_app/me.edit-info.tsx",
+      "parent": "/_app"
+    },
+    "/_app/me/profile": {
+      "filePath": "_app/me.profile.tsx",
+      "parent": "/_app"
+    },
     "/_app/profile/$username": {
       "filePath": "_app/profile.$username.tsx",
-      "parent": "/_app"
-    },
-    "/_app/profile/edit-images": {
-      "filePath": "_app/profile.edit-images.tsx",
-      "parent": "/_app"
-    },
-    "/_app/profile/edit-info": {
-      "filePath": "_app/profile.edit-info.tsx",
-      "parent": "/_app"
-    },
-    "/_app/profile/me": {
-      "filePath": "_app/profile.me.tsx",
       "parent": "/_app"
     },
     "/_auth/auth/forgottenpassword": {

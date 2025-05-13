@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace RandomUserGenerator;
 
@@ -161,3 +162,14 @@ public class Info
     [JsonPropertyName("version")]
     public string Version { get; set; } = string.Empty;
 }
+
+[Serializable]
+public class AddressData
+{
+    [JsonProperty("address")] 
+    public string Address { get; set; } = string.Empty;
+
+    [JsonProperty("coordinates")] 
+    public string Coordinates { get; set; } = string.Empty;
+}
+    

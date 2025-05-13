@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { Center, Flex, VStack } from "@chakra-ui/react";
 import Footer from "@/components/navigation/Footer.tsx";
+import { ResponseInterceptor } from "@/lib/useAxios.ts";
 
 export interface MyRooterContext {
   queryClient: QueryClient;
@@ -40,6 +41,7 @@ export const Route = createRootRouteWithContext<MyRooterContext>()({
 function RootComponent() {
   return (
     <Flex direction="column" h={"100vh"} w={"100vw"}>
+      <ResponseInterceptor />
       <Outlet />
       <ReactQueryDevtools buttonPosition="bottom-left" />
       <TanStackRouterDevtools position="bottom-right" />

@@ -1,48 +1,48 @@
-import {toaster} from "@/components/ui/toaster.tsx";
+import { toaster } from "@/components/ui/toaster.tsx";
 
-export function ToasterError(message: string, description?: string, duration?: number) {
-  const s = toaster.error({
-    title: message,
-    description: description,
-    duration: duration,
-    action: {
-      label: "X",
-      onClick: () => toaster.remove(s),
-    },
-  })
-  return s;
-}
-
-export function ToasterSuccess(message: string, description?: string, duration?: number) {
-  const s = toaster.success({
-    title: message,
-    description: description,
-    duration: duration,
-    action: {
-      label: "X",
-      onClick: () => toaster.remove(s),
-    },
-  })
-  return s;
-}
-
-export function ToasterInfo(message: string, description?: string, duration?: number) {
+export function ToasterError(
+  titre: string,
+  description?: string,
+  duration?: number
+) {
   const s = toaster.create({
-    type: 'info',
-    title: message,
+    type: "error",
+    title: titre,
     description: description,
     duration: duration,
+    closable: true,
     action: {
       label: "X",
       onClick: () => toaster.remove(s),
     },
-  })
-  return s;
+  });
 }
 
-export function ToasterWarning(message: string, description?: string, duration?: number) {
+export function ToasterSuccess(
+  title: string,
+  description?: string,
+  duration: number = 5000
+) {
   const s = toaster.create({
-    type: 'warning',
+    type: "success",
+    title: title,
+    description: description,
+    duration: duration,
+    closable: true,
+    action: {
+      label: "X",
+      onClick: () => toaster.remove(s),
+    },
+  });
+}
+
+export function ToasterInfo(
+  message: string,
+  description?: string,
+  duration?: number
+) {
+  const s = toaster.create({
+    type: "info",
     title: message,
     description: description,
     duration: duration,
@@ -50,6 +50,30 @@ export function ToasterWarning(message: string, description?: string, duration?:
       label: "X",
       onClick: () => toaster.remove(s),
     },
-  })
-  return s;
+  });
+}
+
+export function ToasterWarning(
+  title: string,
+  description?: string,
+  duration?: number
+) {
+  const s = toaster.create({
+    type: "warning",
+    title: title,
+    description: description,
+    duration: duration,
+    action: {
+      label: "X",
+      onClick: () => toaster.remove(s),
+    },
+  });
+}
+
+export function ToasterLoading(title: string, description?: string) {
+  return toaster.create({
+    type: "loading",
+    title: title,
+    description: description,
+  });
 }

@@ -26,10 +26,10 @@ public class UserProfileModel
     [DefaultValue("")]
     public string? Address {get;set;}
     
-    [DefaultValue(0)]
+    [SwaggerIgnore]
     public int? ProfileCompletionPercentage {get;set;}
     
-    [DefaultValue(0)]
+    [SwaggerIgnore]
     public int? FameRating {get;set;}
     
     // For GET request
@@ -43,7 +43,7 @@ public class UserProfileModel
     public List<string> Images {get;set;} = new();
     
     [SwaggerIgnore]
-    public DateTime birthDate {get;set;}
+    public DateTime BirthDate {get;set;}
     
     [SwaggerIgnore]
     public string? Username {get;set;}
@@ -52,11 +52,20 @@ public class UserProfileModel
     public int? Status {get;set;}
 
     [SwaggerIgnore] 
-    public bool? isLiked { get; set; }
+    public bool? IsLiked { get; set; }
     
     [SwaggerIgnore]
-    public bool? isMatched {get;set;}
+    public bool? IsMatched {get;set;}
     
     [SwaggerIgnore]
-    public bool? isBlocked {get;set;}
+    public bool? IsBlocked {get;set;}
+    
+    [SwaggerIgnore]
+    public string? Email {get;set;}
+    
+    [SwaggerIgnore]
+    public bool? IsOnline {get;set;}
+    
+    [SwaggerIgnore]
+    public DateTime? LastSeen {get;set;} 
 }

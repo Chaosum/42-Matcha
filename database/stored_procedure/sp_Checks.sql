@@ -1,6 +1,6 @@
 DELIMITER //
 
-CREATE PROCEDURE CheckUserNameTaken(
+CREATE PROCEDURE CheckUsernameTaken(
     IN username VARCHAR(255)
 )
 BEGIN

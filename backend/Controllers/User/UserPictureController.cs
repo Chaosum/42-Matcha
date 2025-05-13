@@ -13,7 +13,7 @@ namespace backend.Controllers.User;
 [Route("[controller]")]
 public class UserPictureController(ILogger<UserPictureController> logger) : ControllerBase
 {
-    private readonly string _imagePath = Environment.GetEnvironmentVariable("IMAGE_PATH") ?? "/sgoinfre/mservage/matcha/RandomUserGenerator/D:/Documents/dev/dev/RandomUserGenerator/";
+    private readonly string _imagePath = "/app/images/";
 
     /// <summary>
     /// Upload user picture
@@ -78,7 +78,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
             await using MySqlCommand deleteImageCmd = new MySqlCommand("GetUserImage", conn);
             deleteImageCmd.CommandType = CommandType.StoredProcedure;
             deleteImageCmd.Parameters.AddWithValue("@userID", token.id);
-            deleteImageCmd.Parameters.AddWithValue("@position", image.Position);
+            deleteImageCmd.Parameters.AddWithValue("@_position", image.Position);
             await using var reader = deleteImageCmd.ExecuteReader();
 
             var oldUrl = "";
@@ -90,7 +90,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
             await using MySqlCommand addImageCmd = new MySqlCommand("UploadImage", conn);
             addImageCmd.CommandType = CommandType.StoredProcedure;
             addImageCmd.Parameters.AddWithValue("@userID", token.id);
-            addImageCmd.Parameters.AddWithValue("@position", image.Position);
+            addImageCmd.Parameters.AddWithValue("@_position", image.Position);
             addImageCmd.Parameters.AddWithValue("@imageUrl", imageName);
             var result = addImageCmd.ExecuteNonQuery();
             
@@ -133,7 +133,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
             await using MySqlCommand getImageCmd = new MySqlCommand("GetUserImage", conn);
             getImageCmd.CommandType = CommandType.StoredProcedure;
             getImageCmd.Parameters.AddWithValue("@userID", token.id);
-            getImageCmd.Parameters.AddWithValue("@position", position);
+            getImageCmd.Parameters.AddWithValue("@_position", position);
             await using var reader = getImageCmd.ExecuteReader();
             
             // Delete image from disk
@@ -183,7 +183,6 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
     {
         try {
             var url = _imagePath + imageName;
-            Console.WriteLine(url);
             
             if (!System.IO.File.Exists(url)) {
                 logger.LogError("Image file does not exist");

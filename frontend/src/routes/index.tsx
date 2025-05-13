@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { MyRooterContext } from "./__root";
 import { getUserToken } from "@/auth.tsx";
+import { logger } from "@/lib/logger.ts";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -14,15 +15,13 @@ export const Route = createFileRoute("/")({
     context: MyRooterContext;
     location: ParsedLocation;
   }) => {
-    console.log("Index layout");
-    console.log("Location: ", location);
     if (!getUserToken()) {
-      console.log("User is not authenticated");
+      logger.log("User is not authenticated");
       throw redirect({
         to: "/auth/login",
       });
     } else if (location.pathname !== "/home") {
-      console.log("User is authenticated");
+      logger.log("User is authenticated");
       throw redirect({
         to: "/home",
       });

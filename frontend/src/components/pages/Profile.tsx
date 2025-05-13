@@ -4,6 +4,7 @@ import {
   Flex,
   HStack,
   IconButton,
+  Status,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -18,13 +19,19 @@ import {
 import { UserImage } from "@/components/UserImage.tsx";
 import { UserProfile } from "@/lib/interface.ts";
 import { useNavigate } from "@tanstack/react-router";
-import { Route } from "@/routes/_app/profile.me.tsx";
 import { useEffect, useState } from "react";
-import { LikeUser } from "@/lib/query.ts";
+import { BlockUser, LikeUser, ReportUser } from "@/lib/query.ts";
+import { ToasterSuccess } from "@/lib/toaster.ts";
 
 export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
-  const navigate = useNavigate({ from: Route.fullPath });
+  const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
+  const sexualOrientation =
+    data.sexualOrientation === 1
+      ? "Heterosexual"
+      : data.sexualOrientation === 2
+        ? "Homosexual"
+        : "Bisexual";
 
   return (
     <Flex
@@ -38,7 +45,7 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
         <Button
           onClick={async () => {
             await navigate({
-              to: "/profile/edit-info",
+              to: "/me/edit-info",
               search: {
                 fromProfile: true,
               },
@@ -73,8 +80,27 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
           <Flex direction="column" gap={2} p={2}>
             <Text>{data.firstName + " " + data.lastName}</Text>
             <Text>{data.address}</Text>
-            <Text>{age} ans</Text>
-            <Text>Fame: {data.fameRating}</Text>
+            <Flex gap={6} alignItems="center">
+              <Text>{age} ans</Text>
+              <Text>{data.gender === 1 ? "Male" : "Female"}</Text>
+              <Text>{sexualOrientation}</Text>
+            </Flex>
+            <Badge size="md" variant="surface" maxW={"fit-content"}>
+              Fame {data.fameRating}
+            </Badge>
+            {!isMe && (
+              <Flex gap={2} alignItems="center">
+                <Status.Root colorPalette={data.isOnline ? "green" : "red"}>
+                  <Status.Indicator />
+                </Status.Root>
+                <Text>{data.isOnline ? "Online" : "Offline"}</Text>
+                <Text fontSize={"sm"} color="gray.500">
+                  {!data.isOnline && data.lastSeen
+                    ? `Last seen ${new Date(data.lastSeen).toLocaleString()}`
+                    : ""}
+                </Text>
+              </Flex>
+            )}
             <Flex gap={2} wrap="wrap">
               {data.tags &&
                 Object.entries(data.tags).map(([key, value]) => {
@@ -116,7 +142,7 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
           <Button
             onClick={async () => {
               await navigate({
-                to: "/profile/edit-images",
+                to: "/me/edit-images",
                 search: {
                   fromProfile: true,
                 },
@@ -140,34 +166,42 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
 }
 
 function UserAction({ data }: { data: UserProfile }) {
-  const navigate = useNavigate({ from: Route.fullPath });
+  const navigate = useNavigate();
   const [isLike, setIsLike] = useState(data.isLiked);
   const [isBlock, setIsBlock] = useState(data.isBlocked);
   const [isMatch, setIsMatch] = useState(data.isMatched);
 
   useEffect(() => {
-    // Checked match
     if (!isLike && isMatch) {
       setIsMatch(false);
     }
-  }, [isLike]);
 
-  useEffect(() => {
-    // Checked match
-  }, [isMatch]);
+    if (isLike && isBlock) {
+      LikeUser(data.username, false).then(() => {
+        setIsLike(false);
+        setIsMatch(false);
+      });
+    }
+  }, [isLike, isBlock, isMatch]);
 
   return (
     <HStack gap={6} alignItems="center">
-      <IconButton
-        variant="ghost"
-        onClick={async () => {
-          if (await LikeUser(data.username, !isLike)) {
+      {!isBlock && (
+        <IconButton
+          variant="ghost"
+          onClick={async () => {
+            const result = await LikeUser(data.username, !isLike);
+            if (!result) return;
+            if (!isMatch && result.matchStatus) {
+              ToasterSuccess("It's a match!");
+              setIsMatch(true);
+            }
             setIsLike(!isLike);
-          }
-        }}
-      >
-        <LikeIcon checked={isLike} />
-      </IconButton>
+          }}
+        >
+          <LikeIcon checked={isLike} />
+        </IconButton>
+      )}
       {isMatch && (
         <IconButton
           variant="ghost"
@@ -175,7 +209,7 @@ function UserAction({ data }: { data: UserProfile }) {
             await navigate({
               to: "/match",
               search: {
-                id: data.username,
+                username: data.username,
               },
             });
           }}
@@ -185,17 +219,19 @@ function UserAction({ data }: { data: UserProfile }) {
       )}
       <IconButton
         variant="ghost"
-        onClick={() => {
-          // TODO: add query block
-          setIsBlock(!isBlock);
+        onClick={async () => {
+          if (await BlockUser(data.username, !isBlock)) {
+            ToasterSuccess(!isBlock ? "User blocked" : "User unblocked");
+            setIsBlock(!isBlock);
+          }
         }}
       >
         <BlockIcon checked={isBlock} />
       </IconButton>
       <IconButton
         variant="ghost"
-        onClick={() => {
-          // TODO: add query report
+        onClick={async () => {
+          await ReportUser(data.username);
         }}
       >
         <ReportIcon />
