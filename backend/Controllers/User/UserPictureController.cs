@@ -13,7 +13,10 @@ namespace backend.Controllers.User;
 [Route("[controller]")]
 public class UserPictureController(ILogger<UserPictureController> logger) : ControllerBase
 {
-    private readonly string _imagePath = Path.Combine(Directory.GetCurrentDirectory(), "../images/");
+    private static readonly string Environment = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "";
+    private readonly string _imagePath = Environment == "Production" 
+        ? "/app/images" 
+        : Path.Combine(System.Environment.GetEnvironmentVariable("IMAGE_PATH") ?? string.Empty, "images");
 
     /// <summary>
     /// Upload user picture
@@ -30,6 +33,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
     public async Task<ActionResult> Upload([FromForm] UserPictureModel image, [FromHeader] string authorization)
     {
         Console.WriteLine("Image Path: "+ _imagePath);
+        
         try {
             var token = JwtHelper.DecodeJwtToken(authorization);
             if (image.Position < 1 || image.Position > 5)
@@ -183,7 +187,8 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
     public async Task<ActionResult> Get([FromForm] string imageName)
     {
         try {
-            var url = _imagePath + imageName;
+            var url = Path.Combine(_imagePath, imageName);
+            Console.WriteLine(url);
             
             if (!System.IO.File.Exists(url)) {
                 logger.LogError("Image file does not exist");
