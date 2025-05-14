@@ -383,14 +383,14 @@ export async function Dating(params: FiltersModel, authToken: string) {
 
     // Vérifier la réponse
     if (response.status === 200) {
-      console.log("Profiles matching filters: ", response.data);
+      logger.log("Profiles matching filters: ", response.data);
       return response.data; // Retourner les profils récupérés
     } else {
-      console.error("Failed to retrieve profiles.");
+      logger.error("Failed to retrieve profiles.");
       return null;
     }
   } catch (error) {
-    console.error("Error during API call", error);
+    logger.error("Error during API call", error);
     return null; // Retourner null en cas d'erreur
   }
 }

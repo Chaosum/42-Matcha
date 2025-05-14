@@ -3,8 +3,7 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using RandomUserGenerator;
 
-var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-    ?? "Server=localhost;Port=3307;Database=db;user=root;password=root-pass;";
+var connectionString = "Server=localhost;Port=3307;Database=db;user=root;password=root-pass;";
 
 string workingDirectory = Environment.CurrentDirectory;
 string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName;

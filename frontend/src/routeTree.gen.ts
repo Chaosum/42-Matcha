@@ -22,6 +22,7 @@ import { Route as AppHistoryImport } from './routes/_app/history'
 import { Route as AuthAuthRegisterImport } from './routes/_auth/auth.register'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth.login'
 import { Route as AuthAuthForgottenpasswordImport } from './routes/_auth/auth.forgottenpassword'
+import { Route as AuthAuthForgottenpasswordIdImport } from './routes/_auth/auth.forgottenpassword.$id'
 import { Route as AppProfileUsernameImport } from './routes/_app/profile.$username'
 import { Route as AppMeProfileImport } from './routes/_app/me.profile'
 import { Route as AppMeEditInfoImport } from './routes/_app/me.edit-info'
@@ -91,6 +92,12 @@ const AuthAuthLoginRoute = AuthAuthLoginImport.update({
 const AuthAuthForgottenpasswordRoute = AuthAuthForgottenpasswordImport.update({
   id: '/auth/forgottenpassword',
   path: '/auth/forgottenpassword',
+  getParentRoute: () => AuthRoute,
+} as any)
+
+const AuthAuthForgottenpasswordIdRoute = AuthAuthForgottenpasswordIdImport.update({
+  id: '/auth/forgottenpassword/$id',
+  path: '/auth/forgottenpassword/$id',
   getParentRoute: () => AuthRoute,
 } as any)
 

@@ -104,14 +104,10 @@ BEGIN
     )
     GROUP BY u.id, u.username, u.first_name, u.birth_date, u.address, distance_to_ref, common_tags, p.image_url, g.name
     ORDER BY 
-        CASE 
-            WHEN sort_by = 'birth_date' THEN u.birth_date
-            WHEN sort_by = 'distance' THEN CAST(distance_to_ref AS DECIMAL)
-        END ASC,
-        CASE 
-            WHEN sort_by = 'fame' THEN u.fame
-            WHEN sort_by = 'common_tags' THEN common_tags
-        END DESC,
+        IF(sort_by = 'birth_date', u.birth_date, NULL) ASC,
+        IF(sort_by = 'distance', distance_to_ref, NULL) ASC,
+        IF(sort_by = 'fame', u.fame, NULL) DESC,
+        IF(sort_by = 'common_tags', common_tags, NULL) DESC,
         calculatedFame DESC
     LIMIT result_limit OFFSET result_offset;
 END //

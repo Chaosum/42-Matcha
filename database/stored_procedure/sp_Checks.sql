@@ -20,15 +20,13 @@ END //
 
 
 CREATE PROCEDURE CheckUserExist(
-    IN inputUsername VARCHAR(255),
     IN inputMail VARCHAR(255),
     OUT userExists INT
 )
 BEGIN 
     SELECT COUNT(*) INTO userExists
         FROM users
-        WHERE username = inputUsername
-          AND email = inputMail;
+        WHERE email = inputMail;
 END //
 
 DELIMITER ;
