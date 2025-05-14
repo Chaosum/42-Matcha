@@ -63,7 +63,7 @@ function ErrorComponent({error}: { error: Error }) {
     <Center minH="100%">
       <VStack>
         <Text fontSize="lg" color="red.500">
-          Redirecting to /not-verify...
+          Account not verified
         </Text>
       </VStack>
     </Center>

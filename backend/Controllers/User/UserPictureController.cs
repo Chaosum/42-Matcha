@@ -13,7 +13,7 @@ namespace backend.Controllers.User;
 [Route("[controller]")]
 public class UserPictureController(ILogger<UserPictureController> logger) : ControllerBase
 {
-    private readonly string _imagePath = Path.Combine(Directory.GetCurrentDirectory(), "../images/");
+    private readonly string _imagePath = "/app/images/";
 
     /// <summary>
     /// Upload user picture
@@ -183,7 +183,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
     public async Task<ActionResult> Get([FromForm] string imageName)
     {
         try {
-            var url = _imagePath + imageName;
+            var url = Path.Combine(_imagePath, imageName);
             
             if (!System.IO.File.Exists(url)) {
                 logger.LogError("Image file does not exist");

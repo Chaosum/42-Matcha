@@ -54,41 +54,45 @@ async function TryRegister(
 function RouteComponent() {
   const form = useForm<RegisterFormValues>();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isSubmited, setIssubmited] = useState(false);
 
   const onSubmit = form.handleSubmit(async (data) => {
-    const t = ToasterLoading("Création de compte en cours...");
-    const result = await TryRegister(data);
-    toaster.remove(t);
-
-    logger.log(result);
-
-    if (result.error) {
-      result.error.userName &&
+    if (!isSubmited){
+      setIssubmited(true);
+      const t = ToasterLoading("Création de compte en cours...");
+      const result = await TryRegister(data);
+      toaster.remove(t);
+      
+      logger.log(result);
+      
+      if (result.error) {
+        result.error.userName &&
         toaster.error({
           title: "Erreur",
           description: result.error.userName,
         });
-      result.error.password &&
+        result.error.password &&
         toaster.error({
           title: "Erreur",
           description: result.error.password,
         });
-      result.error.mail &&
-        toaster.error({ title: "Erreur", description: result.error.mail });
-      result.error.birthDate &&
-        toaster.error({
-          title: "Erreur",
-          description: result.error.birthDate,
+        result.error.mail &&
+          toaster.error({ title: "Erreur", description: result.error.mail });
+        result.error.birthDate &&
+          toaster.error({
+            title: "Erreur",
+            description: result.error.birthDate,
         });
-    } else {
-      setIsRegistered(true);
-      ToasterSuccess(
-        "Compte créé !",
-        "Veuillez vérifier votre boîte mail pour activer votre compte.",
-        10000
-      );
+      } else {
+        setIsRegistered(true);
+        ToasterSuccess(
+          "Compte créé !",
+          "Veuillez vérifier votre boîte mail pour activer votre compte.",
+          10000
+        );
+      }
     }
-  });
+});
 
   return (
     <VStack gap={6} align={"center"}>

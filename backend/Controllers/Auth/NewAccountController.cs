@@ -101,7 +101,7 @@ public class NewAccountController : ControllerBase
             }
 
             await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
-            await using MySqlCommand cmd = new MySqlCommand("GetVerificationAccountInfo", dbClient);
+            await using MySqlCommand cmd = new MySqlCommand("getVerificationAccountInfo", dbClient);
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("inputVerifyLink", verificationID);
 
@@ -114,13 +114,13 @@ public class NewAccountController : ControllerBase
             bool isVerified = reader.GetBoolean("is_verified");
             string emailVerificationLink = reader.GetString("email_verification_link");
             string email = reader.GetString("email");
-            DateTime forgottenPasswordLinkExpiration = reader.GetDateTime("email_verification_link_expiration");
+            DateTime emailLinkExpiration = reader.GetDateTime("email_verification_link_expiration");
             // Vérifier l'état de l'utilisateur
             if (isVerified)
             {
                 return BadRequest("Account is already verified.");
             }
-            if (emailVerificationLink != verificationID || forgottenPasswordLinkExpiration < DateTime.UtcNow)
+            if (emailVerificationLink != verificationID || emailLinkExpiration < DateTime.UtcNow)
             {
                 return BadRequest("Email expired.");
             }
@@ -144,4 +144,5 @@ public class NewAccountController : ControllerBase
             });
         }
     }
+
 }

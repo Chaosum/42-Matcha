@@ -48,15 +48,34 @@ BEGIN
             WHERE id = user_id;
 END //
 
+CREATE PROCEDURE GetVerificationForgottenPasswordInfo(IN inputVerifyLink VARCHAR(250))
+BEGIN
+    SELECT forgotten_password_link, forgotten_password_link_expiration, email, username
+        FROM users
+        WHERE forgotten_password_link = inputVerifyLink;
+END //
+
+CREATE PROCEDURE assertResetPassword (
+    IN userMail VARCHAR(100),
+    IN userPassword BINARY(32),
+    IN inputSalt VARCHAR(255)
+)
+BEGIN
+    UPDATE users
+        SET password = userPassword,
+            salt = inputSalt
+            WHERE email = userMail;
+END //
+
 CREATE PROCEDURE forgottenPasswordLink(
     IN inputForgottenPasswordLink VARCHAR(250), 
-    IN inputUsername VARCHAR(100)
+    IN inputMail VARCHAR(100)
 )
 BEGIN
     UPDATE users
         SET forgotten_password_link = inputForgottenPasswordLink,
             forgotten_password_link_expiration = NOW() + INTERVAL 1 HOUR
-        WHERE email = inputUsername;
+        WHERE email = inputMail;
 END //
 
 CREATE PROCEDURE getuserid (IN inputUsername VARCHAR(255))
@@ -65,5 +84,7 @@ BEGIN
         FROM users
         WHERE userName = inputUsername;
 END //
+
+
 
 DELIMITER ;

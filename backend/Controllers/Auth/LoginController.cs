@@ -101,7 +101,6 @@ public class LoginController : ControllerBase
             using MySqlCommand cmd = new MySqlCommand("CheckUserExist", dbClient);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("inputUsername", forgottenPassword.UserName);
             cmd.Parameters.AddWithValue("inputMail", forgottenPassword.Email);
             MySqlParameter existsParam = new MySqlParameter("userExists", MySqlDbType.Int32)
             {
@@ -115,6 +114,12 @@ public class LoginController : ControllerBase
             int userExists = Convert.ToInt32(existsParam.Value);
             if (userExists != 0 && forgottenPassword.Email != null)
             {
+                using MySqlCommand cmdLink = new MySqlCommand("forgottenPasswordLink", dbClient);
+                cmdLink.CommandType = CommandType.StoredProcedure;
+
+                cmdLink.Parameters.AddWithValue("inputForgottenPasswordLink", forgottenPasswordLink);
+                cmdLink.Parameters.AddWithValue("inputMail", forgottenPassword.Email);
+                cmdLink.ExecuteNonQuery();
                 Notify.SendForgottenPasswordMail(forgottenPassword.Email, forgottenPasswordLink);
             }
             return Ok("If informations are valid, a mail will be sent to the adress");
@@ -123,6 +128,105 @@ public class LoginController : ControllerBase
         {
             Console.WriteLine($"Erreur : {ex.Message}");
             return StatusCode(500, "An error occurred. Please try again later.");
+        }
+    }
+
+    [HttpPost]
+    [Route("[action]/{verificationID}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyForgottenPassword(string verificationID)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(verificationID)) {
+                return BadRequest("Verification link incorrect");
+            }
+
+            await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+            await using MySqlCommand cmd = new MySqlCommand("GetVerificationForgottenPasswordInfo", dbClient);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("inputVerifyLink", verificationID);
+
+            await using MySqlDataReader reader = cmd.ExecuteReader();
+            if (!reader.Read()) 
+                return BadRequest("Verification link not found or invalid.");
+            
+            // Extraire les colonnes retournées
+            string forgottenPasswordLink = reader.GetString("forgotten_password_link");
+            string email = reader.GetString("email");
+            DateTime emailLinkExpiration = reader.GetDateTime("forgotten_password_link_expiration");
+            if (forgottenPasswordLink != verificationID || emailLinkExpiration < DateTime.UtcNow)
+            {
+                return BadRequest("Email expired.");
+            }
+            reader.Close();
+
+            return Ok("Verification completed successfully.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return StatusCode(500, new
+            {
+                Error = "ServerError",
+                Message = "Une erreur interne est survenue. Veuillez réessayer."
+            });
+        }
+    }
+
+    [HttpPost]
+    [Route("[action]/{verificationID}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(string verificationID, string userPassword, string PasswordVerification)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(verificationID)) {
+                return BadRequest("Verification link incorrect");
+            }
+
+            await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+            await using MySqlCommand cmd = new MySqlCommand("GetVerificationForgottenPasswordInfo", dbClient);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("inputVerifyLink", verificationID);
+
+            await using MySqlDataReader reader = cmd.ExecuteReader();
+            if (!reader.Read()) 
+                return BadRequest("Verification link not found or invalid.");
+            
+            // Extraire les colonnes retournées
+            string forgottenPasswordLink = reader.GetString("forgotten_password_link");
+            string email = reader.GetString("email");
+            string username = reader.GetString("username");
+            DateTime emailLinkExpiration = reader.GetDateTime("forgotten_password_link_expiration");
+            if (forgottenPasswordLink != verificationID || emailLinkExpiration < DateTime.UtcNow)
+            {
+                return BadRequest("Email expired.");
+            }
+            reader.Close();
+
+            if (!Checks.IsValidPassword(userPassword, username))
+            {
+                return BadRequest("Mot de passe incorrect:\nIl faut au moins 1 majuscule 1 minuscule 1 caractères special et 1 chiffre\nLe mot de passe doit faire au moins 8 caracteres");
+            }
+            (string salt, byte [] hashedPassword) = Crypt.CryptPassWord(userPassword ?? throw new InvalidOperationException());
+            await using MySqlCommand cmdReset = new MySqlCommand("assertResetPassword", dbClient);
+            cmdReset.Parameters.AddWithValue("userMail", email);
+            cmdReset.Parameters.AddWithValue("userPassword", hashedPassword);
+            cmdReset.Parameters.AddWithValue("inputSalt", salt);
+            cmdReset.ExecuteNonQuery();
+            return Ok("Password updated successfully.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return StatusCode(500, new
+            {
+                Error = "ServerError",
+                Message = "Une erreur interne est survenue. Veuillez réessayer."
+            });
         }
     }
 };
