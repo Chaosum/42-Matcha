@@ -55,7 +55,7 @@ public static class Notify {
             using MailMessage mail = new MailMessage();
             mail.From = new MailAddress(smtpUser, "Matcha");
             mail.To.Add(email);
-            mail.Subject = "Verify Your Email Address";
+            mail.Subject = "Reset Your Password";
             
             mail.Body = $@"
                     <html>
