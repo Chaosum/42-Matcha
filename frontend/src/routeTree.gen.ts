@@ -22,12 +22,12 @@ import { Route as AppHistoryImport } from './routes/_app/history'
 import { Route as AuthAuthRegisterImport } from './routes/_auth/auth.register'
 import { Route as AuthAuthLoginImport } from './routes/_auth/auth.login'
 import { Route as AuthAuthForgottenpasswordImport } from './routes/_auth/auth.forgottenpassword'
-import { Route as AuthAuthForgottenpasswordIdImport } from './routes/_auth/auth.forgottenpassword.$id'
 import { Route as AppProfileUsernameImport } from './routes/_app/profile.$username'
 import { Route as AppMeProfileImport } from './routes/_app/me.profile'
 import { Route as AppMeEditInfoImport } from './routes/_app/me.edit-info'
 import { Route as AppMeEditImagesImport } from './routes/_app/me.edit-images'
 import { Route as AuthAuthVerifyIdImport } from './routes/_auth/auth.verify.$id'
+import { Route as AuthAuthResetpasswordIdImport } from './routes/_auth/auth.resetpassword.$id'
 
 // Create/Update Routes
 
@@ -95,12 +95,6 @@ const AuthAuthForgottenpasswordRoute = AuthAuthForgottenpasswordImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 
-const AuthAuthForgottenpasswordIdRoute = AuthAuthForgottenpasswordIdImport.update({
-  id: '/auth/forgottenpassword/$id',
-  path: '/auth/forgottenpassword/$id',
-  getParentRoute: () => AuthRoute,
-} as any)
-
 const AppProfileUsernameRoute = AppProfileUsernameImport.update({
   id: '/profile/$username',
   path: '/profile/$username',
@@ -128,6 +122,12 @@ const AppMeEditImagesRoute = AppMeEditImagesImport.update({
 const AuthAuthVerifyIdRoute = AuthAuthVerifyIdImport.update({
   id: '/auth/verify/$id',
   path: '/auth/verify/$id',
+  getParentRoute: () => AuthRoute,
+} as any)
+
+const AuthAuthResetpasswordIdRoute = AuthAuthResetpasswordIdImport.update({
+  id: '/auth/resetpassword/$id',
+  path: '/auth/resetpassword/$id',
   getParentRoute: () => AuthRoute,
 } as any)
 
@@ -240,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAuthRegisterImport
       parentRoute: typeof AuthImport
     }
+    '/_auth/auth/resetpassword/$id': {
+      id: '/_auth/auth/resetpassword/$id'
+      path: '/auth/resetpassword/$id'
+      fullPath: '/auth/resetpassword/$id'
+      preLoaderRoute: typeof AuthAuthResetpasswordIdImport
+      parentRoute: typeof AuthImport
+    }
     '/_auth/auth/verify/$id': {
       id: '/_auth/auth/verify/$id'
       path: '/auth/verify/$id'
@@ -281,6 +288,7 @@ interface AuthRouteChildren {
   AuthAuthForgottenpasswordRoute: typeof AuthAuthForgottenpasswordRoute
   AuthAuthLoginRoute: typeof AuthAuthLoginRoute
   AuthAuthRegisterRoute: typeof AuthAuthRegisterRoute
+  AuthAuthResetpasswordIdRoute: typeof AuthAuthResetpasswordIdRoute
   AuthAuthVerifyIdRoute: typeof AuthAuthVerifyIdRoute
 }
 
@@ -289,6 +297,7 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthAuthForgottenpasswordRoute: AuthAuthForgottenpasswordRoute,
   AuthAuthLoginRoute: AuthAuthLoginRoute,
   AuthAuthRegisterRoute: AuthAuthRegisterRoute,
+  AuthAuthResetpasswordIdRoute: AuthAuthResetpasswordIdRoute,
   AuthAuthVerifyIdRoute: AuthAuthVerifyIdRoute,
 }
 
@@ -309,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/auth/login': typeof AuthAuthLoginRoute
   '/auth/register': typeof AuthAuthRegisterRoute
+  '/auth/resetpassword/$id': typeof AuthAuthResetpasswordIdRoute
   '/auth/verify/$id': typeof AuthAuthVerifyIdRoute
 }
 
@@ -327,6 +337,7 @@ export interface FileRoutesByTo {
   '/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/auth/login': typeof AuthAuthLoginRoute
   '/auth/register': typeof AuthAuthRegisterRoute
+  '/auth/resetpassword/$id': typeof AuthAuthResetpasswordIdRoute
   '/auth/verify/$id': typeof AuthAuthVerifyIdRoute
 }
 
@@ -347,6 +358,7 @@ export interface FileRoutesById {
   '/_auth/auth/forgottenpassword': typeof AuthAuthForgottenpasswordRoute
   '/_auth/auth/login': typeof AuthAuthLoginRoute
   '/_auth/auth/register': typeof AuthAuthRegisterRoute
+  '/_auth/auth/resetpassword/$id': typeof AuthAuthResetpasswordIdRoute
   '/_auth/auth/verify/$id': typeof AuthAuthVerifyIdRoute
 }
 
@@ -367,6 +379,7 @@ export interface FileRouteTypes {
     | '/auth/forgottenpassword'
     | '/auth/login'
     | '/auth/register'
+    | '/auth/resetpassword/$id'
     | '/auth/verify/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -384,6 +397,7 @@ export interface FileRouteTypes {
     | '/auth/forgottenpassword'
     | '/auth/login'
     | '/auth/register'
+    | '/auth/resetpassword/$id'
     | '/auth/verify/$id'
   id:
     | '__root__'
@@ -402,6 +416,7 @@ export interface FileRouteTypes {
     | '/_auth/auth/forgottenpassword'
     | '/_auth/auth/login'
     | '/_auth/auth/register'
+    | '/_auth/auth/resetpassword/$id'
     | '/_auth/auth/verify/$id'
   fileRoutesById: FileRoutesById
 }
@@ -456,6 +471,7 @@ export const routeTree = rootRoute
         "/_auth/auth/forgottenpassword",
         "/_auth/auth/login",
         "/_auth/auth/register",
+        "/_auth/auth/resetpassword/$id",
         "/_auth/auth/verify/$id"
       ]
     },
@@ -505,6 +521,10 @@ export const routeTree = rootRoute
     },
     "/_auth/auth/register": {
       "filePath": "_auth/auth.register.tsx",
+      "parent": "/_auth"
+    },
+    "/_auth/auth/resetpassword/$id": {
+      "filePath": "_auth/auth.resetpassword.$id.tsx",
       "parent": "/_auth"
     },
     "/_auth/auth/verify/$id": {

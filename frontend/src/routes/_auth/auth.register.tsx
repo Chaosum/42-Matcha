@@ -54,6 +54,7 @@ async function TryRegister(
 function RouteComponent() {
   const form = useForm<RegisterFormValues>();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = form.handleSubmit(async (data) => {
     const t = ToasterLoading("Création de compte en cours...");

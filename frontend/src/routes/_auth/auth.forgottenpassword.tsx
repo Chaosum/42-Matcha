@@ -11,23 +11,20 @@ import {
 } from '@chakra-ui/react'
 import {Link} from '@tanstack/react-router'
 import {RiArrowRightLine} from 'react-icons/ri'
+import {ToasterError} from "@/lib/toaster.ts";
 
 export const Route = createFileRoute('/_auth/auth/forgottenpassword')({
   component: ForgottenPasswordForm,
 })
 
-export default function ForgottenPasswordForm() {
+function ForgottenPasswordForm() {
   const [email, setEmail] = useState('')
   const navigate = useNavigate()
-  const {open, onOpen, onClose} = useDisclosure()
-  const [redirectTimeout, setRedirectTimeout] = useState<ReturnType<
-    typeof setTimeout
-  > | null>(null)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch(
+      await fetch(
         'http://localhost:5163/Auth/ForgottenPassword/',
         {
           method: 'POST',
@@ -35,29 +32,11 @@ export default function ForgottenPasswordForm() {
           body: JSON.stringify({Email: email, UserName: email}),
         },
       )
-
-      onOpen() // Affiche la modal
-
-      // Démarre un timer pour redirection après 5 secondes
-      const timeout = setTimeout(() => {
-        navigate({to: '/auth/login'})
-      }, 5000)
-      setRedirectTimeout(timeout)
+      await navigate({to: '/auth/login'})
     } catch (err) {
-      onOpen() // Même comportement en cas d'erreur
-      const timeout = setTimeout(() => {
-        navigate({to: '/auth/login'})
-      }, 5000)
-      setRedirectTimeout(timeout)
+      ToasterError('Error', 'An error occurred while sending the reset link.')
+      await navigate({to: '/auth/login'})
     }
-  }
-
-  const handleClose = async () => {
-    if (redirectTimeout) {
-      clearTimeout(redirectTimeout) // Stoppe le timeout si l'utilisateur clique
-    }
-    onClose()
-    await navigate({to: '/auth/login'}) // Redirige immédiatement
   }
 
   return (
@@ -102,25 +81,6 @@ export default function ForgottenPasswordForm() {
           </Stack>
         </Card.Footer>
       </Card.Root>
-
-      {/* Modal de confirmation */}
-      {/*<Modal isOpen={open} onClose={handleClose} isCentered>*/}
-      {/*  <ModalOverlay />*/}
-      {/*  <ModalContent>*/}
-      {/*    <ModalHeader>Check your mailbox!</ModalHeader>*/}
-      {/*    <ModalBody>*/}
-      {/*      <Text>*/}
-      {/*        If the email is correct, an email will be sent to your address.*/}
-      {/*      </Text>*/}
-      {/*      <Text mt={2}>*/}
-      {/*        You will be redirected to the login page in 5 seconds...*/}
-      {/*      </Text>*/}
-      {/*    </ModalBody>*/}
-      {/*    <ModalFooter>*/}
-      {/*      <Button onClick={handleClose}>OK</Button>*/}
-      {/*    </ModalFooter>*/}
-      {/*  </ModalContent>*/}
-      {/*</Modal>*/}
     </Flex>
   )
 }

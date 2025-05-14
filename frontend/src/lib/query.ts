@@ -394,3 +394,37 @@ export async function Dating(params: FiltersModel, authToken: string) {
     return null; // Retourner null en cas d'erreur
   }
 }
+
+export async function VerifyForgottenPassword(id: string) {
+  return await instance
+  .post("/auth/verifyForgottenPassword/" + id, {})
+  .then(() => {
+    return true;
+  })
+  .catch(() => {
+    ToasterError("Erreur", "Lien invalide");
+    return false;
+  });
+}
+
+export async function ResetPasswordRequest(id: string, password: string, confirmPassword: string) {
+  return await instance
+  .post("Auth/ResetPassword/" + id, {
+    password: password,
+    confirmPassword: confirmPassword,
+  }, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+  .then((res: AxiosResponse) => {
+    return res;
+  })
+  .catch((err: AxiosError) => {
+    if (err.response?.status === 400) {
+      // ToasterError("Erreur", err.response.data);
+    } else
+      // ToasterError("Erreur", "Erreur lors de la réinitialisation du mot de passe.");
+      return false;
+  });
+}

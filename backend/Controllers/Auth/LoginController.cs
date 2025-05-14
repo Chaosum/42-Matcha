@@ -179,17 +179,22 @@ public class LoginController : ControllerBase
     [Route("[action]/{verificationID}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ResetPassword(string verificationID, string userPassword, string PasswordVerification)
+    public async Task<IActionResult> ResetPassword(string verificationID, [FromBody] ResetPasswordModel data)
     {
         try
         {
-            if (string.IsNullOrEmpty(verificationID)) {
+            if (string.IsNullOrEmpty(data.Password) || string.IsNullOrEmpty(data.ConfirmPassword))
+                return BadRequest("Password and confirmation are required.");
+            
+            if (data.Password != data.ConfirmPassword)
+                return BadRequest("Passwords do not match.");
+            
+            if (string.IsNullOrEmpty(verificationID))
                 return BadRequest("Verification link incorrect");
-            }
 
             await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
-            await using MySqlCommand cmd = new MySqlCommand("GetVerificationForgottenPasswordInfo", dbClient);
-            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            await using MySqlCommand cmd = new("GetVerificationForgottenPasswordInfo", dbClient);
+            cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("inputVerifyLink", verificationID);
 
             await using MySqlDataReader reader = cmd.ExecuteReader();
@@ -200,23 +205,25 @@ public class LoginController : ControllerBase
             string forgottenPasswordLink = reader.GetString("forgotten_password_link");
             string email = reader.GetString("email");
             string username = reader.GetString("username");
+            
             DateTime emailLinkExpiration = reader.GetDateTime("forgotten_password_link_expiration");
             if (forgottenPasswordLink != verificationID || emailLinkExpiration < DateTime.UtcNow)
-            {
                 return BadRequest("Email expired.");
-            }
-            reader.Close();
+            
+            await reader.CloseAsync();
 
-            if (!Checks.IsValidPassword(userPassword, username))
-            {
+            if (!Checks.IsValidPassword(data.Password, username))
                 return BadRequest("Mot de passe incorrect:\nIl faut au moins 1 majuscule 1 minuscule 1 caractères special et 1 chiffre\nLe mot de passe doit faire au moins 8 caracteres");
-            }
-            (string salt, byte [] hashedPassword) = Crypt.CryptPassWord(userPassword ?? throw new InvalidOperationException());
+            
+            (string salt, byte [] hashedPassword) = Crypt.CryptPassWord(data.Password ?? throw new InvalidOperationException());
+            
             await using MySqlCommand cmdReset = new MySqlCommand("assertResetPassword", dbClient);
+            cmdReset.CommandType = CommandType.StoredProcedure;
             cmdReset.Parameters.AddWithValue("userMail", email);
             cmdReset.Parameters.AddWithValue("userPassword", hashedPassword);
             cmdReset.Parameters.AddWithValue("inputSalt", salt);
             cmdReset.ExecuteNonQuery();
+            
             return Ok("Password updated successfully.");
         }
         catch (Exception e)

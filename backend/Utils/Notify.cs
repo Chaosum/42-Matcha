@@ -62,7 +62,7 @@ public static class Notify {
                     <body>
                         <h1>Forgot your password ?</h1>
                         <p>Click the link below to create a new password:</p>
-                        <a href='http://localhost:3000/Auth/forgottenpassword/{forgottenPasswordLink}'>Change password</a>
+                        <a href='http://localhost:3000/Auth/resetpassword/{forgottenPasswordLink}'>Change password</a>
                         <p>This email is valid for 1 hour</p>
                         <p>If you didn't request this, you can ignore this email.</p>
                     </body>
