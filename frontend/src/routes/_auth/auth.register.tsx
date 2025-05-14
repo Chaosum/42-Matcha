@@ -1,11 +1,11 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useForm } from "react-hook-form";
-import { VStack } from "@chakra-ui/react";
-import { RegisterForm } from "@/components/form/RegisterForm.tsx";
-import { useState } from "react";
-import { toaster } from "@/components/ui/toaster.tsx";
-import { ToasterLoading, ToasterSuccess } from "@/lib/toaster.ts";
-import { logger } from "@/lib/logger.ts";
+import {createFileRoute, Navigate} from "@tanstack/react-router";
+import {useForm} from "react-hook-form";
+import {VStack} from "@chakra-ui/react";
+import {RegisterForm} from "@/components/form/RegisterForm.tsx";
+import {useEffect, useState} from "react";
+import {toaster} from "@/components/ui/toaster.tsx";
+import {ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
+import {logger} from "@/lib/logger.ts";
 
 export interface RegisterFormValues {
   username: string;
@@ -47,39 +47,42 @@ async function TryRegister(
     return response.json();
   } catch (e) {
     console.error(e);
-    return { error: { server: "Erreur serveur" } };
+    return {error: {server: "Erreur serveur"}};
   }
 }
 
 function RouteComponent() {
   const form = useForm<RegisterFormValues>();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = form.handleSubmit(async (data) => {
     const t = ToasterLoading("Création de compte en cours...");
+    setLoading(true);
     const result = await TryRegister(data);
     toaster.remove(t);
+    setLoading(false);
 
     logger.log(result);
 
     if (result.error) {
       result.error.userName &&
-        toaster.error({
-          title: "Erreur",
-          description: result.error.userName,
-        });
+      toaster.error({
+        title: "Erreur",
+        description: result.error.userName,
+      });
       result.error.password &&
-        toaster.error({
-          title: "Erreur",
-          description: result.error.password,
-        });
+      toaster.error({
+        title: "Erreur",
+        description: result.error.password,
+      });
       result.error.mail &&
-        toaster.error({ title: "Erreur", description: result.error.mail });
+      toaster.error({title: "Erreur", description: result.error.mail});
       result.error.birthDate &&
-        toaster.error({
-          title: "Erreur",
-          description: result.error.birthDate,
-        });
+      toaster.error({
+        title: "Erreur",
+        description: result.error.birthDate,
+      });
     } else {
       setIsRegistered(true);
       ToasterSuccess(
@@ -90,10 +93,14 @@ function RouteComponent() {
     }
   });
 
+  useEffect(() => {
+
+  }, [loading]);
+
   return (
     <VStack gap={6} align={"center"}>
-      <RegisterForm onSubmit={onSubmit} form={form} />
-      {isRegistered ? <Navigate to={"/auth/login"} /> : null}
+      <RegisterForm onSubmit={onSubmit} form={form} loading={loading}/>
+      {isRegistered ? <Navigate to={"/auth/login"}/> : null}
     </VStack>
   );
 }

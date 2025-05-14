@@ -1,17 +1,18 @@
-import { Button, Input, Stack, Text, VStack } from "@chakra-ui/react";
-import { Field } from "@/components/ui/field";
-import { PasswordInput } from "@/components/ui/password-input";
-import { UseFormReturn } from "react-hook-form";
-import { Link } from "@tanstack/react-router";
-import { RiArrowRightLine } from "react-icons/ri";
-import { FormEventHandler } from "react";
-import { RegisterFormValues } from "@/routes/_auth/auth.register.tsx";
+import {Button, Input, Stack, Text, VStack} from "@chakra-ui/react";
+import {Field} from "@/components/ui/field";
+import {PasswordInput} from "@/components/ui/password-input";
+import {UseFormReturn} from "react-hook-form";
+import {Link} from "@tanstack/react-router";
+import {RiArrowRightLine} from "react-icons/ri";
+import {FormEventHandler} from "react";
+import {RegisterFormValues} from "@/routes/_auth/auth.register.tsx";
 
 export function RegisterForm(props: {
   form: UseFormReturn<RegisterFormValues>;
   onSubmit: FormEventHandler<HTMLFormElement>;
+  loading: boolean;
 }) {
-  const { form } = props;
+  const {form} = props;
   const errors = form.formState.errors;
 
   return (
@@ -114,14 +115,14 @@ export function RegisterForm(props: {
             })}
           />
         </Field>
-        <Button type="submit" size="md" cursor="pointer">
+        <Button type="submit" size="md" cursor="pointer" disabled={props.loading}>
           Submit
         </Button>
         <Stack direction="row" align="center">
           <Text justifyContent={"center"}>Already have an account ? </Text>
           <Link to={"/auth/login"} className={"chakra-button"}>
             <Button size="xs" variant="subtle">
-              Login <RiArrowRightLine />
+              Login <RiArrowRightLine/>
             </Button>
           </Link>
         </Stack>
