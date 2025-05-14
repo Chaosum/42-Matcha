@@ -3,7 +3,7 @@ import {
   useLoaderData,
   useNavigate,
 } from "@tanstack/react-router";
-import {ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
+import {ToasterError, ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
 import {useForm} from "react-hook-form";
 import {toaster} from "@/components/ui/toaster.tsx";
 import {VStack} from "@chakra-ui/react";
@@ -87,7 +87,7 @@ function RouteComponent() {
     const result = await UpdateProfile(data);
     toaster.remove(t);
 
-    if (result.status === 200) {
+    if (!result || result?.status === 200) {
       ToasterSuccess("Profil mis à jour avec succès");
       if (isCreation) await navigate({to: "/me/edit-images"});
       else await navigate({to: "/me/profile"});

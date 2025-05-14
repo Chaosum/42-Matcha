@@ -250,23 +250,21 @@ export function EditProfileForm(props: {
                   <Input
                     value={address}
                     onBlur={async () => {
-                      if (address != profile.address) {
-                        const result = await GetCoordinates(address);
-                        logger.log(
-                          result?.latitude.toString() +
-                          "," +
-                          result?.longitude.toString()
-                        );
-                        setValue(
-                          "coordinates",
-                          result?.latitude.toString() +
-                          "," +
-                          result?.longitude.toString(),
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                      }
+                      const result = await GetCoordinates(address);
+                      logger.log(
+                        result?.latitude +
+                        "," +
+                        result?.longitude
+                      );
+                      setValue(
+                        "coordinates",
+                        result?.latitude +
+                        "," +
+                        result?.longitude,
+                        {
+                          shouldValidate: true,
+                        }
+                      );
                     }}
                     onChange={(e) => {
                       setAddress(e.target.value);

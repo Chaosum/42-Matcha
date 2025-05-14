@@ -91,14 +91,17 @@ export async function UpdateProfile(data: UserProfileFormValue) {
       },
     }
   )
-  .then((res) => {
+  .then((res: AxiosResponse) => {
     return res;
   })
-  .catch(async (err) => {
+  .catch(async (err: AxiosError) => {
+    if (err.response) {
+      ToasterError("Erreur", err.response.data);
+    }
     return err.response;
   });
 
-  if (profile === null || profile?.status !== 200) {
+  if (profile?.status !== 200) {
     return profile;
   }
 
@@ -115,12 +118,12 @@ export async function UpdateProfile(data: UserProfileFormValue) {
       },
     }
   )
-  .then((res) => {
-    return res;
+  .then(async (err: AxiosError) => {
+    if (err.response) {
+      ToasterError("Erreur", err.response.data);
+    }
+    return err.response;
   })
-  .catch(async (err) => {
-    return err;
-  });
 }
 
 export async function FetchTagsList(): Promise<Tags[]> {

@@ -149,6 +149,9 @@ public static class Checks {
         Console.WriteLine("parts[0] : " + parts[0]);
         Console.WriteLine("parts[1] : " + parts[1]);
         
+        if (!IsDecimal(parts[0]) || !IsDecimal(parts[1]))
+            return false;
+        
         var latitude = decimal.Parse(parts[0]);
         var longitude = decimal.Parse(parts[1]);
         
@@ -184,8 +187,8 @@ public static class Checks {
         if (data.Biography != null && data.Biography!.Length > 0 && !IsValidBiography(data.Biography!))
             return new ValidationResult { IsValid = false, Message = "Invalid biography" };
         
-        if (data.Coordinates == null || !HasValidLength(data.Coordinates!, 0, 25) || !IsCoordinate(data.Coordinates!))
-            return new ValidationResult { IsValid = false, Message = "Invalid coordinates" };
+        if (string.IsNullOrEmpty(data.Address) || data.Coordinates == null || !HasValidLength(data.Coordinates!, 0, 25) || !IsCoordinate(data.Coordinates!))
+            return new ValidationResult { IsValid = false, Message = "Invalid address" };
         
         return new ValidationResult { IsValid = true };
     }

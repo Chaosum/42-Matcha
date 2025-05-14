@@ -217,7 +217,7 @@ public class UserProfileController(ILogger<UserProfileController> logger, ISseSe
             cmd.Parameters.AddWithValue("@sexualOrientation", data.SexualOrientation);
             cmd.Parameters.AddWithValue("@Biography", data.Biography);
             cmd.Parameters.AddWithValue("@Coordinates", data.Coordinates);
-            cmd.Parameters.AddWithValue("@Address", data.Address);
+            cmd.Parameters.AddWithValue("@Address", data.Address?.Trim());
             cmd.ExecuteNonQuery();
             return Ok("Profile successfully updated");
         }
