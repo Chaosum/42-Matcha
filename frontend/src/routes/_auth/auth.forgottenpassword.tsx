@@ -7,7 +7,6 @@ import {
   Stack,
   Text,
   Flex,
-  useDisclosure,
 } from '@chakra-ui/react'
 import {Link} from '@tanstack/react-router'
 import {RiArrowRightLine} from 'react-icons/ri'

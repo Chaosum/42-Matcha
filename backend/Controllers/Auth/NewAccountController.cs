@@ -5,6 +5,7 @@ using backend.Models.Users;
 using backend.Utils;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
+using System.Net.Mail;
 
 namespace backend.Controllers.Auth;
 
@@ -183,24 +184,22 @@ public class NewAccountController : ControllerBase
 
             // Si la procédure renvoie 1 ou "true", l'e-mail est déjà pris
             if (result != null && Convert.ToInt32(result) > 0){
-                await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
-                await using MySqlCommand cmd = new MySqlCommand("updateEmailVerificationLink", dbClient);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                await using MySqlConnection dbClientUpdateVerifLink = DbHelper.GetOpenConnection();
+                await using MySqlCommand cmdVerifLink = new MySqlCommand("updateEmailVerificationLink", dbClientUpdateVerifLink);
+                cmdVerifLink.CommandType = System.Data.CommandType.StoredProcedure;
 
                 string verificationLink = Guid.NewGuid().ToString();
-                cmd.Parameters.AddWithValue("userMail", verificationID);
-                cmd.Parameters.AddWithValue("verificationLink", verificationLink);
-                cmd.Parameters.AddWithValue("verificationLinkExpiration", DateTime.UtcNow.AddHours(1));
-                cmd.ExecuteNonQuery();
-                dbClient.Close();
-                SendVerificationEmail(email, verificationLink);
+                cmdVerifLink.Parameters.AddWithValue("userMail", email);
+                cmdVerifLink.Parameters.AddWithValue("verificationLink", verificationLink);
+                cmdVerifLink.Parameters.AddWithValue("verificationLinkExpiration", DateTime.UtcNow.AddHours(1));
+                cmdVerifLink.ExecuteNonQuery();
+                dbClientUpdateVerifLink.Close();
+                Notify.SendVerificationEmail(email, verificationLink);
             }
-            return OK("Mail sent if correct")
+            return Ok("Mail sent if correct");
         }
         catch (Exception ex) {
-            // Log l'erreur ou gérer comme nécessaire
-            Console.WriteLine($"Erreur lors de la vérification de l'e-mail : {ex.Message}");
-            return false;
+            return BadRequest($"Erreur lors de la vérification de l'e-mail : {ex.Message}");
         }
     }
 }
