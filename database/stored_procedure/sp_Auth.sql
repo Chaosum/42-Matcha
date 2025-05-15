@@ -27,6 +27,18 @@ BEGIN
     WHERE username = inputUsername;
 END //
 
+CREATE PROCEDURE updateEmailVerificationLink(
+    IN userMail VARCHAR(100),=
+    IN verificationLink VARCHAR(255),
+    IN verificationLinkExpiration DATETIME
+)
+BEGIN
+    UPDATE users
+        SET email_verification_link = verificationLink,
+            email_verification_link_expiration = verificationLinkExpiration
+            WHERE email = userMail;
+END //
+
 CREATE PROCEDURE GetUserMailByUsername(IN inputUsername VARCHAR(50))
 BEGIN
     SELECT email

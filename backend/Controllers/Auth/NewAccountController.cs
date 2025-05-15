@@ -149,4 +149,58 @@ public class NewAccountController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> sendverificationlink(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+            return BadRequest("Email null ou vide");
+
+        // Validation du format de l'e-mail
+        try
+        {
+            var mailAddress = new MailAddress(email);
+        }
+        catch (FormatException)
+        {
+             return BadRequest("format du mail incorect"); // Format invalide
+        }
+
+        // Vérification en base de données
+        try
+        {
+            using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+            using MySqlCommand cmd = new MySqlCommand("CheckMailTaken", dbClient);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@userMail", email);
+
+            // La procédure stockée renvoie un entier ou un booléen
+            var result = cmd.ExecuteScalar();
+            
+            dbClient.Close();
+
+            // Si la procédure renvoie 1 ou "true", l'e-mail est déjà pris
+            if (result != null && Convert.ToInt32(result) > 0){
+                await using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+                await using MySqlCommand cmd = new MySqlCommand("updateEmailVerificationLink", dbClient);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                string verificationLink = Guid.NewGuid().ToString();
+                cmd.Parameters.AddWithValue("userMail", verificationID);
+                cmd.Parameters.AddWithValue("verificationLink", verificationLink);
+                cmd.Parameters.AddWithValue("verificationLinkExpiration", DateTime.UtcNow.AddHours(1));
+                cmd.ExecuteNonQuery();
+                dbClient.Close();
+                SendVerificationEmail(email, verificationLink);
+            }
+            return OK("Mail sent if correct")
+        }
+        catch (Exception ex) {
+            // Log l'erreur ou gérer comme nécessaire
+            Console.WriteLine($"Erreur lors de la vérification de l'e-mail : {ex.Message}");
+            return false;
+        }
+    }
 }
