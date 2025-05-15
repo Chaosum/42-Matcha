@@ -134,7 +134,7 @@ public class DatingController : ControllerBase
         FullUserProfileModel? profile = GetUserProfile(username);
         if (profile == null)
         {
-            return ValidationProblem();
+            return Ok();
         }
         //on recupere les profils qui match les gaps qu'on a renseigner
         try

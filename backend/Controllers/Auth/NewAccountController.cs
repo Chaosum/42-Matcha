@@ -5,6 +5,7 @@ using backend.Models.Users;
 using backend.Utils;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
+using System.Net.Mail;
 
 namespace backend.Controllers.Auth;
 
@@ -149,4 +150,56 @@ public class NewAccountController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> sendverificationlink(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+            return BadRequest("Email null ou vide");
+
+        // Validation du format de l'e-mail
+        try
+        {
+            var mailAddress = new MailAddress(email);
+        }
+        catch (FormatException)
+        {
+             return BadRequest("format du mail incorect"); // Format invalide
+        }
+
+        // Vérification en base de données
+        try
+        {
+            using MySqlConnection dbClient = DbHelper.GetOpenConnection();
+            using MySqlCommand cmd = new MySqlCommand("CheckMailTaken", dbClient);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@userMail", email);
+
+            // La procédure stockée renvoie un entier ou un booléen
+            var result = cmd.ExecuteScalar();
+            
+            dbClient.Close();
+
+            // Si la procédure renvoie 1 ou "true", l'e-mail est déjà pris
+            if (result != null && Convert.ToInt32(result) > 0){
+                await using MySqlConnection dbClientUpdateVerifLink = DbHelper.GetOpenConnection();
+                await using MySqlCommand cmdVerifLink = new MySqlCommand("updateEmailVerificationLink", dbClientUpdateVerifLink);
+                cmdVerifLink.CommandType = System.Data.CommandType.StoredProcedure;
+
+                string verificationLink = Guid.NewGuid().ToString();
+                cmdVerifLink.Parameters.AddWithValue("userMail", email);
+                cmdVerifLink.Parameters.AddWithValue("verificationLink", verificationLink);
+                cmdVerifLink.Parameters.AddWithValue("verificationLinkExpiration", DateTime.UtcNow.AddHours(1));
+                cmdVerifLink.ExecuteNonQuery();
+                dbClientUpdateVerifLink.Close();
+                Notify.SendVerificationEmail(email, verificationLink);
+            }
+            return Ok("Mail sent if correct");
+        }
+        catch (Exception ex) {
+            return BadRequest($"Erreur lors de la vérification de l'e-mail : {ex.Message}");
+        }
+    }
 }
