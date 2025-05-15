@@ -28,7 +28,7 @@ BEGIN
 END //
 
 CREATE PROCEDURE updateEmailVerificationLink(
-    IN userMail VARCHAR(100),=
+    IN userMail VARCHAR(100),
     IN verificationLink VARCHAR(255),
     IN verificationLinkExpiration DATETIME
 )
