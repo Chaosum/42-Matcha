@@ -293,7 +293,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Position must be between 1 and 5';
     END IF;
     
-    SELECT COUNT(@count) FROM pictures WHERE user_id = userID AND pictures.position = _position;
+    SELECT COUNT(*) INTO @count FROM pictures WHERE user_id = userID AND pictures.position = _position;
     
     IF @count > 0 THEN
         UPDATE pictures SET image_url = imageUrl WHERE user_id = userID AND pictures.position = _position;

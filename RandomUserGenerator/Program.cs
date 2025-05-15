@@ -1,14 +1,16 @@
 ﻿using System.Data;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
 using RandomUserGenerator;
 
 var connectionString = "Server=localhost;Port=3307;Database=db;user=root;password=root-pass;";
 
-string workingDirectory = Environment.CurrentDirectory;
-string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName;
+if (args.Length < 1) {
+    Console.WriteLine("Please provide the project directory as an argument.");
+    return;
+}
+var projectDirectory = args[0];
 if (!Directory.Exists(projectDirectory)) {
-    Console.WriteLine("Project directory not found.");
+    Console.WriteLine("Project directory not found. Launch database first.");
     return;
 }
 var imagesPath = Path.Combine(projectDirectory, "images/");
@@ -54,7 +56,7 @@ try
         await GenerateUser.Generate(connection, "male", numberOfMaleUsers, imagesPath);
         Console.WriteLine("Done!");
     }
-
+ 
     connection.Close();
 
 }

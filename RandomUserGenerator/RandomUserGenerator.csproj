@@ -7,16 +7,13 @@
         <Nullable>enable</Nullable>
         <UserSecretsId>43ea0c83-085b-4f2c-b256-656fa3c7c925</UserSecretsId>
         <LangVersion>13</LangVersion>
+        <PublishSingleFile>true</PublishSingleFile>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Bogus" Version="35.6.1" />
       <PackageReference Include="MySql.Data" Version="9.1.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="exe\" />
     </ItemGroup>
 
 </Project>
