@@ -72,7 +72,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
             
             // Save image to disk
             var imageName = Guid.NewGuid() + "." + extension;
-            var url = _imagePath + imageName;
+            var url = Path.Combine(_imagePath, imageName);
             Console.WriteLine(url);
 
             await System.IO.File.WriteAllBytesAsync(url, bytes);
