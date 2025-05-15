@@ -3,8 +3,7 @@ import {
   getRouteApi,
   useNavigate,
 } from "@tanstack/react-router";
-import {Center, VStack, Text} from "@chakra-ui/react";
-import {useEffect} from "react";
+import {Center, VStack, Text, Link} from "@chakra-ui/react";
 import {logger} from "@/lib/logger.ts";
 
 // Création de la route avec un loader
@@ -51,20 +50,13 @@ function RouteComponent() {
 function ErrorComponent({error}: { error: Error }) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    logger.log(error.message);
-    // Rediriger vers /auth/not-verify après une erreur
-    navigate({to: "/auth/not-verify"}).then(() =>
-      logger.log("Redirected); to /auth/not-verify")
-    );
-  }, [error.message, navigate]);
-
   return (
     <Center minH="100%">
       <VStack>
         <Text fontSize="lg" color="red.500">
-          Account not verified
+          Lien non valide ou expiré.
         </Text>
+        <Link to="/">Login</Link>
       </VStack>
     </Center>
   );

@@ -25,17 +25,21 @@ public class NewAccountController : ControllerBase
     {
         if (!Checks.IsValidUserName(newAccount.UserName))
         {
-            _responseMessage.UserName = $"Nom d'utilisateur invalide:\nIl doit contenir entre 3 et 20 caractères\nIl ne doit pas contenir de caractère speciaux {newAccount.UserName}";
+            _responseMessage.UserName = "Nom d'utilisateur invalide." +
+                                        "Il doit contenir entre 3 et 20 caractères." +
+                                        "Il ne peux contenir que ces caractère spéciaux: @$!%*+-?&";
         }
         if (!Checks.IsValidPassword(newAccount.Password, newAccount.UserName))
         {
-            _responseMessage.Password = "Mot de passe incorrect:\nIl faut au moins 1 majuscule 1 minuscule 1 caractères special et 1 chiffre\nLe mot de passe doit faire au moins 8 caracteres";
+            _responseMessage.Password = "Mot de passe incorrect." +
+                                        "Il faut au moins 1 majuscule 1 minuscule 1 caractères special et 1 chiffre." +
+                                        "Le mot de passe doit faire au moins 8 caractères.";
         }
         if (!Checks.IsValidMail(newAccount.Email)) {
             _responseMessage.Mail = "L'adresse e-mail est invalide. Veuillez fournir une adresse e-mail valide.";
         }
         if (!Checks.IsValidBirthDate(newAccount.BirthDate)) {
-            _responseMessage.BirthDate = "Vous devez etre majeur pour vous inscrire.";
+            _responseMessage.BirthDate = "Vous devez être majeur pour vous inscrire.";
         }
         
         if (_responseMessage.UserName != "" || _responseMessage.Password != "" || _responseMessage.Mail != "" || _responseMessage.BirthDate != "") {
