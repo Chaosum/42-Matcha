@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react'
 import {Link} from '@tanstack/react-router'
 import {RiArrowRightLine} from 'react-icons/ri'
-import {ToasterError} from "@/lib/toaster.ts";
+import {ToasterError, ToasterSuccess} from "@/lib/toaster.ts";
 
 export const Route = createFileRoute('/_auth/auth/forgottenpassword')({
   component: ForgottenPasswordForm,
@@ -31,6 +31,7 @@ function ForgottenPasswordForm() {
           body: JSON.stringify({Email: email, UserName: email}),
         },
       )
+      ToasterSuccess('Email sent with success')
       await navigate({to: '/auth/login'})
     } catch (err) {
       ToasterError('Error', 'An error occurred while sending the reset link.')

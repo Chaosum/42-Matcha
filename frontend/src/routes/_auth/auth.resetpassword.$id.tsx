@@ -3,8 +3,9 @@ import {FormEvent, useState} from "react";
 import {ResetPasswordRequest, VerifyForgottenPassword} from "@/lib/query.ts";
 import {Center, Input, VStack, Text} from "@chakra-ui/react";
 import {Button} from "@/components/ui/button.tsx";
-import {ToasterError} from "@/lib/toaster.ts";
+import {ToasterError, ToasterSuccess} from "@/lib/toaster.ts";
 import {logger} from "@/lib/logger.ts";
+import { toaster } from "@/components/ui/toaster";
 
 export const Route = createFileRoute("/_auth/auth/resetpassword/$id")({
   loader: async ({params}) => {
@@ -42,13 +43,14 @@ function ResetPassword() {
 
     if (password !== confirmPassword) {
       ToasterError("Erreur", "Les mots de passe ne correspondent pas.");
+      setLoading(false);
       return;
     }
 
     const response = await ResetPasswordRequest(id, password, confirmPassword);
     if (response)
+      ToasterSuccess("Password modified with success")
       await navigate({to: "/auth/login"});
-
     setLoading(false);
   };
 
