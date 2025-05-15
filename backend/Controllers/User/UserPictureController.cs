@@ -16,7 +16,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
     private static readonly string Environment = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "";
     private readonly string _imagePath = Environment == "Production" 
         ? "/app/images" 
-        : Path.Combine(System.Environment.GetEnvironmentVariable("IMAGE_PATH") ?? string.Empty, "images");
+        : System.Environment.GetEnvironmentVariable("IMAGE_PATH") ?? string.Empty;
 
     /// <summary>
     /// Upload user picture
@@ -150,7 +150,7 @@ public class UserPictureController(ILogger<UserPictureController> logger) : Cont
             var fileName = reader["image_url"].ToString() ?? "";
             await reader.CloseAsync();
             
-            var url = _imagePath + fileName;
+            var url = Path.Combine(_imagePath, fileName);
             
             if (System.IO.File.Exists(url))
                 System.IO.File.Delete(url);

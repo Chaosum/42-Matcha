@@ -13,7 +13,7 @@ export interface UserProfile {
   isVerified: boolean;
   profilePercentage: number;
   fameRating: number;
-  images: string[];
+  images: Images;
   gender: number;
   sexualOrientation: number;
   status: number;
@@ -23,6 +23,10 @@ export interface UserProfile {
   isBan: boolean;
   isOnline: boolean;
   lastSeen: Date;
+}
+
+export interface Images {
+  [key: string]: number;
 }
 
 export interface Tags {
@@ -35,13 +39,6 @@ export enum ProfileStatus {
   IMAGES = 1,
   COMPLETED = 2,
 }
-
-export interface IUserContext {
-  profileData: UserProfile;
-  setProfileData: (user: UserProfile) => void;
-}
-
-export const UserContext = createContext<IUserContext | null>(null);
 
 export type Match = {
   username: string;

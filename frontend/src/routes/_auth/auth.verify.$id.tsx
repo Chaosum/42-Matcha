@@ -2,8 +2,9 @@ import {
   createFileRoute,
   getRouteApi,
   useNavigate,
+  Link
 } from "@tanstack/react-router";
-import {Center, VStack, Text, Link} from "@chakra-ui/react";
+import {Center, VStack, Text} from "@chakra-ui/react";
 import {logger} from "@/lib/logger.ts";
 
 // Création de la route avec un loader
@@ -42,6 +43,7 @@ function RouteComponent() {
         <Text fontSize="lg" color="green.500">
           Account verified successfully
         </Text>
+        <Link to="/">Login</Link>
       </VStack>
     </Center>
   );

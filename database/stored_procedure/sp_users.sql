@@ -11,7 +11,7 @@ BEGIN
     FROM users WHERE users.id = @userID;
 
     SELECT name, id FROM tags WHERE id IN (SELECT tag_id FROM users_tags WHERE user_id = @userID);
-    SELECT image_url FROM pictures WHERE user_id = @userID ORDER BY position;
+    SELECT image_url, position FROM pictures WHERE user_id = @userID ORDER BY position;
 END //
 
 CREATE PROCEDURE GetLikeAndMatch(

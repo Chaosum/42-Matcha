@@ -1,9 +1,5 @@
-import {
-  createFileRoute,
-  useLoaderData,
-  useNavigate,
-} from "@tanstack/react-router";
-import {ToasterError, ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
+import {createFileRoute, useLoaderData, useNavigate,} from "@tanstack/react-router";
+import {ToasterLoading, ToasterSuccess} from "@/lib/toaster.ts";
 import {useForm} from "react-hook-form";
 import {toaster} from "@/components/ui/toaster.tsx";
 import {VStack} from "@chakra-ui/react";
@@ -12,16 +8,13 @@ import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {ProfileStatus, Tags, UserProfile} from "@/lib/interface.ts";
 import {FetchTagsList, GetMeProfile, UpdateProfile} from "@/lib/query.ts";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {logger} from "@/lib/logger.ts";
 
 export const Route = createFileRoute("/_app/me/edit-info")({
   component: RouteComponent,
   loader: async () => {
-    const profile = (await GetMeProfile()) as UserProfile;
-    const tags = (await FetchTagsList()) as Tags[];
-
-    return {profile, tags};
+    return (await FetchTagsList()) as Tags[];
   },
 });
 
@@ -54,10 +47,25 @@ export type UserProfileFormValue = z.infer<typeof formSchema>;
 
 function RouteComponent() {
   const navigate = useNavigate({from: Route.fullPath});
-  const {profile, tags} = useLoaderData(Route.id) as {
-    profile: UserProfile;
-    tags: Tags[];
-  };
+  const [profile, setProfile] = useState<UserProfile>(null);
+  const tags = useLoaderData(Route.id) as Tags[];
+
+  useEffect(() => {
+    GetMeProfile().then((res: UserProfile) => setProfile(res));
+  }, []);
+
+  useEffect(() => {
+    logger.log("useEffect", profile);
+    if (!profile) return;
+    form.setValue("firstName", profile.firstName);
+    form.setValue("lastName", profile.lastName);
+    form.setValue("biography", profile.biography);
+    form.setValue("coordinates", profile.coordinates);
+    form.setValue("address", profile.address);
+    form.setValue("tags", Object.values(profile.tags));
+    form.setValue("gender", profile.gender || 1);
+    form.setValue("sexualOrientation", profile.sexualOrientation || 1);
+  }, [profile]);
 
   const form = useForm<UserProfileFormValue>({
     resolver: zodResolver(formSchema),
@@ -94,16 +102,9 @@ function RouteComponent() {
     }
   });
 
-  useEffect(() => {
-    form.setValue("firstName", profile.firstName);
-    form.setValue("lastName", profile.lastName);
-    form.setValue("biography", profile.biography);
-    form.setValue("coordinates", profile.coordinates);
-    form.setValue("address", profile.address);
-    form.setValue("tags", Object.values(profile.tags));
-    form.setValue("gender", profile.gender || 1);
-    form.setValue("sexualOrientation", profile.sexualOrientation || 1);
-  }, [profile]);
+  if (!profile) {
+    return <></>;
+  }
 
   return (
     <VStack gap={6} align={"center"}>

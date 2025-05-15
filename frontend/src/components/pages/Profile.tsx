@@ -16,14 +16,14 @@ import {
   LikeIcon,
   ReportIcon,
 } from "@/components/Icons.tsx";
-import { UserImage } from "@/components/UserImage.tsx";
-import { UserProfile } from "@/lib/interface.ts";
-import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { BlockUser, LikeUser, ReportUser } from "@/lib/query.ts";
-import { ToasterSuccess } from "@/lib/toaster.ts";
+import {UserImage} from "@/components/UserImage.tsx";
+import {UserProfile} from "@/lib/interface.ts";
+import {useNavigate} from "@tanstack/react-router";
+import {useEffect, useState} from "react";
+import {BlockUser, LikeUser, ReportUser} from "@/lib/query.ts";
+import {ToasterSuccess} from "@/lib/toaster.ts";
 
-export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
+export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(data.birthDate).getFullYear();
   const sexualOrientation =
@@ -55,7 +55,7 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
           top={5}
           right={5}
         >
-          <EditIcon />
+          <EditIcon/>
         </Button>
       )}
       <Flex
@@ -69,12 +69,12 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
       >
         <VStack gap={2} alignItems="center">
           <UserImage
-            imageName={data.images[0]}
+            imageName={data.images[1]}
             width="300px"
             height="300px"
             borderRadius={"full"}
           />
-          {!isMe && <UserAction data={data} />}
+          {!isMe && <UserAction data={data}/>}
         </VStack>
         <Flex direction={"column"} alignItems="left" gap={4} grow={1}>
           <Flex direction="column" gap={2} p={2}>
@@ -91,7 +91,7 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
             {!isMe && (
               <Flex gap={2} alignItems="center">
                 <Status.Root colorPalette={data.isOnline ? "green" : "red"}>
-                  <Status.Indicator />
+                  <Status.Indicator/>
                 </Status.Root>
                 <Text>{data.isOnline ? "Online" : "Offline"}</Text>
                 <Text fontSize={"sm"} color="gray.500">
@@ -152,20 +152,19 @@ export function Profile({ data, isMe }: { data: UserProfile; isMe: boolean }) {
             top={5}
             right={5}
           >
-            <EditImages />
+            <EditImages/>
           </Button>
         )}
-        {data.images &&
-          data.images.map((_image, index) => {
-            if (index + 1 > 1)
-              return <UserImage key={index} imageName={_image} />;
-          })}
+        <UserImage imageName={data.images[2]}/>
+        <UserImage imageName={data.images[3]}/>
+        <UserImage imageName={data.images[4]}/>
+        <UserImage imageName={data.images[5]}/>
       </Flex>
     </Flex>
   );
 }
 
-function UserAction({ data }: { data: UserProfile }) {
+function UserAction({data}: { data: UserProfile }) {
   const navigate = useNavigate();
   const [isLike, setIsLike] = useState(data.isLiked);
   const [isBlock, setIsBlock] = useState(data.isBlocked);
@@ -199,7 +198,7 @@ function UserAction({ data }: { data: UserProfile }) {
             setIsLike(!isLike);
           }}
         >
-          <LikeIcon checked={isLike} />
+          <LikeIcon checked={isLike}/>
         </IconButton>
       )}
       {isMatch && (
@@ -214,7 +213,7 @@ function UserAction({ data }: { data: UserProfile }) {
             });
           }}
         >
-          <ConversationIcon />
+          <ConversationIcon/>
         </IconButton>
       )}
       <IconButton
@@ -226,7 +225,7 @@ function UserAction({ data }: { data: UserProfile }) {
           }
         }}
       >
-        <BlockIcon checked={isBlock} />
+        <BlockIcon checked={isBlock}/>
       </IconButton>
       <IconButton
         variant="ghost"
@@ -234,7 +233,7 @@ function UserAction({ data }: { data: UserProfile }) {
           await ReportUser(data.username);
         }}
       >
-        <ReportIcon />
+        <ReportIcon/>
       </IconButton>
     </HStack>
   );

@@ -20,7 +20,6 @@ import {logger} from "@/lib/logger.ts";
 export const Route = createFileRoute("/_app/home")({
   component: Home,
   loader: async () => {
-
   },
 });
 

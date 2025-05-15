@@ -13,6 +13,7 @@ import {instance} from "@/lib/useAxios.ts";
 import {logger} from "@/lib/logger.ts";
 
 export async function GetMeProfile() {
+  logger.log("GetMeProfile");
   return await instance
   .get("/UserProfile/Me", {
     headers: {
@@ -201,8 +202,10 @@ export async function ValidateProfile() {
     ToasterSuccess(response.data);
     return true;
   })
-  .catch(() => {
-    ToasterError("Error", "An error occured");
+  .catch((err: AxiosError) => {
+    if (err.response?.status === 400) {
+      ToasterError("Erreur", err.response.data);
+    }
     return false;
   });
 }
@@ -390,8 +393,7 @@ export async function Dating(params: FiltersModel, authToken: string) {
       return null;
     }
   } catch (error) {
-    logger.error("Error during API call", error);
-    return null; // Retourner null en cas d'erreur
+    return null;
   }
 }
 
@@ -421,10 +423,6 @@ export async function ResetPasswordRequest(id: string, password: string, confirm
     return res;
   })
   .catch((err: AxiosError) => {
-    if (err.response?.status === 400) {
-      // ToasterError("Erreur", err.response.data);
-    } else
-      // ToasterError("Erreur", "Erreur lors de la réinitialisation du mot de passe.");
-      return false;
+    return false;
   });
 }

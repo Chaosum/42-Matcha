@@ -13,7 +13,8 @@ export interface Logger {
 /** Log levels */
 export type LogLevel = "log" | "warn" | "error";
 
-const NO_OP: LogFn = (message?: any, ...optionalParams: any[]) => { };
+const NO_OP: LogFn = (message?: any, ...optionalParams: any[]) => {
+};
 
 /** Logger which outputs to the browser console */
 export class ConsoleLogger implements Logger {
@@ -22,7 +23,7 @@ export class ConsoleLogger implements Logger {
   readonly error: LogFn;
 
   constructor(options?: { level?: LogLevel }) {
-    const { level } = options || {};
+    const {level} = options || {};
 
     this.error = console.error.bind(console);
 
@@ -45,4 +46,4 @@ export class ConsoleLogger implements Logger {
   }
 }
 
-export const logger = new ConsoleLogger({ level: "warn" });
+export const logger = new ConsoleLogger({level: "warn"});

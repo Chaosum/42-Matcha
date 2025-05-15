@@ -40,7 +40,7 @@ public class UserProfileModel
     public Dictionary<string, int> Tags {get;set;} = new();
     
     [SwaggerIgnore]
-    public List<string> Images {get;set;} = new();
+    public Dictionary<int, string> Images {get;set;} = new();
     
     [SwaggerIgnore]
     public DateTime BirthDate {get;set;}

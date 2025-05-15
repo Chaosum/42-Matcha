@@ -83,8 +83,11 @@ public class UserProfileController(ILogger<UserProfileController> logger, ISseSe
                 
             // Pictures
             if (reader.NextResult()) {
-                while (reader.Read())
-                    profile.Images.Add(reader["image_url"] as string ?? "");
+                while (reader.Read()) {
+                    var imageUrl = reader["image_url"] as string ?? "";
+                    var position = reader["position"] as int? ?? -1;
+                    profile.Images.Add(position, imageUrl);
+                }
             }
             await reader.CloseAsync();
             
@@ -174,7 +177,11 @@ public class UserProfileController(ILogger<UserProfileController> logger, ISseSe
             // Pictures
             if (reader.NextResult()) {
                 while (reader.Read())
-                    profile.Images.Add(reader["image_url"] as string ?? "");
+                {
+                    var imageUrl = reader["image_url"] as string ?? "";
+                    var position = reader["position"] as int? ?? 0;
+                    profile.Images.Add(position, imageUrl);
+                }
             }
             await reader.CloseAsync();
                 

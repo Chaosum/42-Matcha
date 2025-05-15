@@ -1,23 +1,24 @@
-import {createFileRoute, useNavigate, useSearch} from '@tanstack/react-router'
+import {createFileRoute, useLoaderData, useNavigate, useSearch} from '@tanstack/react-router'
 import {FileUploadDropzone, FileUploadRoot} from '@/components/ui/file-upload'
 import {AspectRatio, Flex, Grid, Image} from '@chakra-ui/react'
 import {ToasterError, ToasterSuccess} from '@/lib/toaster.ts'
-import {useContext, useEffect, useState} from 'react'
+import {useEffect, useState} from 'react'
 import {CloseButton} from '@/components/ui/close-button.tsx'
 import {TrashIcon} from '@/components/Icons.tsx'
 import {Button} from '@/components/ui/button.tsx'
 import {
   DeleteImage,
-  DownloadImage,
+  DownloadImage, GetMeProfile,
   UploadToServer,
   ValidateProfile,
 } from '@/lib/query.ts'
-import {UserContext, UserProfile} from '@/lib/interface.ts'
+import {UserProfile} from '@/lib/interface.ts'
 import {AxiosError} from 'axios'
 import {logger} from "@/lib/logger.ts";
 
 export const Route = createFileRoute('/_app/me/edit-images')({
   component: RouteComponent,
+  loader: async () => await GetMeProfile(),
 })
 
 function UploadImageComponent({
@@ -37,6 +38,8 @@ function UploadImageComponent({
     DownloadImage(imageName)
     .then((res) => {
       setImage(res.data);
+    }).catch((error) => {
+      logger.log(error);
     })
   }, [imageName])
 
@@ -136,16 +139,16 @@ function RouteComponent() {
   const fromProfile = useSearch(Route.id) as {
     fromProfile: boolean
   } ?? false;
-  const profile = useContext(UserContext)?.profileData as UserProfile
+  const profile = useLoaderData(Route.id) as UserProfile;
 
   return (
     <Grid gap="4" p="4">
       <Flex gap="4" wrap="wrap" justifyContent="center" alignItems="center">
-        <UploadImageComponent imageName={profile.images[0]} position={1}/>
-        <UploadImageComponent imageName={profile.images[1]} position={2}/>
-        <UploadImageComponent imageName={profile.images[2]} position={3}/>
-        <UploadImageComponent imageName={profile.images[3]} position={4}/>
-        <UploadImageComponent imageName={profile.images[4]} position={5}/>
+        <UploadImageComponent imageName={profile.images[1] ?? ""} position={1}/>
+        <UploadImageComponent imageName={profile.images[2] ?? ""} position={2}/>
+        <UploadImageComponent imageName={profile.images[3] ?? ""} position={3}/>
+        <UploadImageComponent imageName={profile.images[4] ?? ""} position={4}/>
+        <UploadImageComponent imageName={profile.images[5] ?? ""} position={5}/>
       </Flex>
       <Button
         justifySelf={'center'}
