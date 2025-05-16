@@ -78,7 +78,12 @@ export function Profile({data, isMe}: { data: UserProfile; isMe: boolean }) {
         </VStack>
         <Flex direction={"column"} alignItems="left" gap={4} grow={1}>
           <Flex direction="column" gap={2} p={2}>
-            <Text>{data.firstName + " " + data.lastName}</Text>
+          	<Flex direction={"row"} gap={4}>
+				<Text>{data.firstName + " " + data.lastName}</Text>
+				<Badge size="md" variant="surface" maxW={"fit-content"}>
+				  {data.username}
+				</Badge>
+			</Flex>
             <Text>{data.address}</Text>
             <Flex gap={6} alignItems="center">
               <Text>{age} ans</Text>
